@@ -61,7 +61,7 @@ export function LoginForm({
               Welcome back
             </CardTitle>
             <CardDescription className="text-muted-foreground">
-              Enter your credentials to access your gadget vault
+              Enter your credentials to continue shopping.
             </CardDescription>
           </div>
         </CardHeader>
@@ -206,7 +206,7 @@ export function LoginForm({
                 size={14}
                 className="group-hover:-translate-x-1 transition-transform"
               />
-              Back to showroom
+              Back to home
             </Link>
           </div>
         </CardContent>

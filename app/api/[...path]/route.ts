@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 const DEFAULT_TARGET =
   process.env.API_PROXY_TARGET ||
   process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "http://localhost:3000/v1";
+  "http://localhost:3000/api/v1";
 
 function buildUpstreamUrl(pathname: string, search: string) {
   const base = DEFAULT_TARGET.replace(/\/$/, "");
@@ -19,7 +19,7 @@ function buildUpstreamUrl(pathname: string, search: string) {
 async function forward(request: NextRequest, path: string[]) {
   const targetUrl = buildUpstreamUrl(
     request.nextUrl.pathname,
-    request.nextUrl.search
+    request.nextUrl.search,
   );
   const headers = new Headers(request.headers);
   headers.delete("host");
@@ -53,7 +53,7 @@ async function forward(request: NextRequest, path: string[]) {
 
 async function handler(
   request: NextRequest,
-  context: { params: Promise<{ path?: string[] }> }
+  context: { params: Promise<{ path?: string[] }> },
 ) {
   const resolved = await context.params;
   const path = resolved.path || [];

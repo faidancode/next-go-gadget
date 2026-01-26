@@ -12,7 +12,7 @@ type EmptyStateProps = {
 
 export function EmptyState({
   title = "Your cart is empty",
-  description = "Go find the books you like",
+  description = "Go find the products you like",
   href = "/shop",
   linkText = "Return to shop",
   showButton = true,

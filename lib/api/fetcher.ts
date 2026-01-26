@@ -86,7 +86,7 @@ function extractMessage(body: unknown): string {
 
 async function apiFetch(
   path: string,
-  options: ApiRequestInit & { __retry?: boolean } = {}
+  options: ApiRequestInit & { __retry?: boolean } = {},
 ) {
   const res = await fetch(`/api${path}`, {
     credentials: "include",
@@ -133,7 +133,7 @@ async function apiFetch(
 export async function apiRequest<T>(
   path: string,
   bodyOrOptions?: unknown,
-  maybeOptions: ApiRequestInit = {}
+  maybeOptions: ApiRequestInit = {},
 ): Promise<ApiEnvelope<T>> {
   const isOptionsOnly =
     bodyOrOptions &&
@@ -156,8 +156,8 @@ export async function apiRequest<T>(
       ? isFormData
         ? body
         : typeof body === "string"
-        ? body
-        : JSON.stringify(body)
+          ? body
+          : JSON.stringify(body)
       : undefined,
     headers: {
       ...(isFormData ? {} : DEFAULT_HEADERS),
@@ -174,9 +174,9 @@ export async function apiRequest<T>(
 
 export function unwrapEnvelope<T>(
   envelope: ApiEnvelope<T>,
-  fallback = "Request failed"
+  fallback = "Request failed",
 ): T {
-  if (envelope.ok) return envelope.data;
+  if (envelope.success) return envelope.data;
 
   const message =
     typeof envelope.error?.message === "string"
@@ -234,7 +234,7 @@ type MaybeErrorBody = {
  */
 export function getErrorMessage(
   error: unknown,
-  fallback = "Something went wrong"
+  fallback = "Something went wrong",
 ): string {
   // Handle ApiError
   if (error instanceof ApiError) {
@@ -257,7 +257,7 @@ export function getErrorMessage(
 
 export function getErrorCode(
   error: unknown,
-  fallback = "Something went wrong"
+  fallback = "Something went wrong",
 ): string {
   // Handle ApiError
   if (error instanceof ApiError) {
@@ -283,7 +283,7 @@ export function getErrorCode(
  */
 export function getErrorPayload(
   error: unknown,
-  fallback = "Something went wrong"
+  fallback = "Something went wrong",
 ): ApiErrorPayload {
   // Handle ApiError
   if (error instanceof ApiError) {
@@ -316,7 +316,7 @@ export function getErrorPayload(
  * Extract field validation errors from error body
  */
 function extractFieldErrors(
-  body: unknown
+  body: unknown,
 ): Record<string, string[]> | undefined {
   if (!body || typeof body !== "object") return undefined;
 

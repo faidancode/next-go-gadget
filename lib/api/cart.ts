@@ -1,34 +1,25 @@
-import type { Cart, CartItem, CartItem as CartItemRow } from "@/types";
 import type { CartItem as LocalCartItem } from "@/app/stores/cart";
 import { apiRequest } from "./fetcher";
 import { unwrapSingle } from "./normalizers";
+import {
+  CartItem,
+  CartItemInput,
+  CartMergeInput,
+  CartWithItems,
+} from "@/types/cart";
 
 const CART_ENDPOINT = "/carts";
 
-export type CartWithItems = Cart & {
-  data?: CartItem[];
-  items?: CartItem[];
-};
-
-export type CartItemInput = {
-  bookId: string;
-  quantity: number;
-  priceCentsAtAdd: number;
-};
-
-export type CartMergeInput = {
-  userId: string;
-  items: CartItemInput[];  
-};
-
-export function mapLocalItemsToCartInput(items: LocalCartItem[]): CartItemInput[] {
+export function mapLocalItemsToCartInput(
+  items: LocalCartItem[],
+): CartItemInput[] {
   if (!Array.isArray(items) || items.length === 0) {
     return [];
   }
   return items
     .filter((item) => item && item.qty > 0)
     .map((item) => ({
-      bookId: item.id,
+      productId: item.id,
       quantity: item.qty,
       priceCentsAtAdd: item.price,
     }));
@@ -41,16 +32,16 @@ export function mapServerCartItemsToLocal(items?: CartItem[]): LocalCartItem[] {
 
   for (const item of items) {
     if (!item) continue;
-    const id = item.bookId;
+    const id = item.productId;
     if (!id) continue;
 
     localItems.push({
       id,
-      title: item.bookTitle ?? "Untitled",
-      slug: item.bookSlug,
-      author: item.bookAuthor ?? undefined,
-      price: item.priceCentsAtAdd?? 0,
-      coverUrl: item.bookCoverUrl ?? "",
+      title: item.productTitle ?? "Untitled",
+      slug: item.productSlug,
+      author: item.productAuthor ?? undefined,
+      price: item.priceCentsAtAdd ?? 0,
+      imageUrl: item.productCoverUrl ?? "",
       category: item.categoryId ?? "",
       qty: item.quantity ?? 1,
       cartItemId: item.id,
@@ -60,7 +51,9 @@ export function mapServerCartItemsToLocal(items?: CartItem[]): LocalCartItem[] {
   return localItems;
 }
 
-export async function replaceCart(input: CartMergeInput): Promise<CartWithItems | null> {
+export async function replaceCart(
+  input: CartMergeInput,
+): Promise<CartWithItems | null> {
   if (!input.userId) {
     throw new Error("userId is required");
   }
@@ -73,7 +66,9 @@ export async function replaceCart(input: CartMergeInput): Promise<CartWithItems 
 // Alias untuk backward compatibility
 export const syncCartWithServer = replaceCart;
 
-export async function getCartByUser(userId: string): Promise<CartWithItems | null> {
+export async function getCartByUser(
+  userId: string,
+): Promise<CartWithItems | null> {
   if (!userId) {
     return null;
   }
@@ -122,7 +117,7 @@ export async function getCartCount(userId?: string): Promise<number> {
 
 export async function updateCartItemQuantity(
   itemId: string,
-  quantity: number
+  quantity: number,
 ): Promise<CartWithItems | null> {
   if (!itemId) {
     throw new Error("itemId is required");
@@ -130,9 +125,7 @@ export async function updateCartItemQuantity(
   const payload = await apiRequest<unknown>(
     `${CART_ENDPOINT}/items/${encodeURIComponent(itemId)}`,
     { quantity },
-    { method: "PATCH" }
+    { method: "PATCH" },
   );
   return unwrapSingle<CartWithItems>(payload);
 }
-
-

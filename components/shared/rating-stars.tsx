@@ -12,7 +12,7 @@ export function RatingStars({
   value,
   size = 16,
   max = 5,
-  filledColor = "oklch(0.69 0.21 34)",
+  filledColor = "oklch(0.8383 0.1603 85.76)",
   emptyColor = "#cbd5e1",
 }: RatingStarsProps) {
   const rounded = Math.round(Math.max(0, Math.min(value, max)));

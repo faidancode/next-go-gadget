@@ -12,7 +12,7 @@ const poppins = Poppins({
 
 export const metadata: Metadata = {
   title: "GoGadget",
-  description: "High quality books at affordable prices.",
+  description: "High quality products at affordable prices.",
 };
 
 export default function RootLayout({

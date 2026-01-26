@@ -11,7 +11,7 @@ export type CartItem = {
   slug: string;
   author?: string;
   price: number;
-  coverUrl: string;
+  imageUrl: string;
   category: string;
   qty: number;
   cartItemId?: string;
@@ -21,7 +21,7 @@ type CartState = {
   items: CartItem[];
   totalItems: number;
   totalPriceCents: number;
-  add: (book: Book, qty?: number) => void;
+  add: (product: Book, qty?: number) => void;
   setCartTotalItems: (count: number) => void;
   inc: (id: string) => void;
   dec: (id: string) => void;
@@ -47,7 +47,7 @@ const sanitizeItems = (items: CartItem[]) =>
       title: item.title || "Untitled",
       slug: item.slug || "",
       author: item.author,
-      coverUrl: item.coverUrl ?? "",
+      imageUrl: item.imageUrl ?? "",
       category: item.category ?? "",
       cartItemId: item.cartItemId,
     }));
@@ -68,21 +68,21 @@ export const useCartStore = create(
 
       return {
         ...initialState,
-        add: (book, qty = 1) => {
+        add: (product, qty = 1) => {
           const items = get().items.slice();
-          const idx = items.findIndex((item) => item.id === book.id);
-          const priceAtAdd = book.discountPriceCents ?? book.priceCents;
+          const idx = items.findIndex((item) => item.id === product.id);
+          const priceAtAdd = product.discountPriceCents ?? product.priceCents;
           if (idx >= 0) {
             items[idx] = { ...items[idx], qty: items[idx].qty + qty };
           } else {
             items.push({
-              id: book.id,
-              title: book.title,
-              slug: book.slug,
-              author: book.authorName ?? undefined,
+              id: product.id,
+              title: product.title,
+              slug: product.slug,
+              author: product.authorName ?? undefined,
               price: priceAtAdd,
-              coverUrl: book.coverUrl,
-              category: book.categoryId,
+              imageUrl: product.imageUrl,
+              category: product.categoryId,
               qty,
             });
           }

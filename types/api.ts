@@ -2,7 +2,7 @@ export type ApiEnvelope<T> = {
   data: T;
   meta: Record<string, unknown>;
   error: Record<string, unknown>;
-  ok: boolean;
+  success: boolean;
 };
 
 export type PaginationMeta = {

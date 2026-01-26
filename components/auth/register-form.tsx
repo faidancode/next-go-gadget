@@ -247,7 +247,7 @@ export function RegisterForm({
                 size={14}
                 className="group-hover:-translate-x-1 transition-transform"
               />
-              Back to showroom
+              Back to home
             </Link>
           </div>
         </CardContent>

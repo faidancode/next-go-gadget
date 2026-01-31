@@ -10,9 +10,8 @@ export type CartItem = {
   id: string;
   cartId: string;
   productId: string;
-  productTitle: string;
+  productName: string;
   productSlug: string;
-  productAuthor: string;
   productCoverUrl: string;
   categoryId: string;
   quantity: number;

@@ -9,21 +9,11 @@ type TitleProps = {
   noSpacing?: boolean;
 };
 
-export function Title({
-  children,
-  className,
-  noSpacing = false,
-}: TitleProps) {
+export function Title({ children, className, noSpacing = false }: TitleProps) {
   const spacing = noSpacing ? "" : "mb-4";
 
   return (
-    <h1
-      className={cn(
-        "text-2xl font-semibold text-secondary",
-        spacing,
-        className
-      )}
-    >
+    <h1 className={cn("text-2xl font-semibold", spacing, className)}>
       {children}
     </h1>
   );

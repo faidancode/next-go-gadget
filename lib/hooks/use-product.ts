@@ -9,7 +9,7 @@ export function useProducts(
 ) {
   const {
     enabled = true,
-    pageSize = PAGE_SIZE,
+    limit = PAGE_SIZE,
     categories,
     minPrice,
     maxPrice,
@@ -17,11 +17,11 @@ export function useProducts(
   } = params || {};
 
   return useInfiniteQuery({
-    queryKey: ["products", pageSize, categories, minPrice, maxPrice, sort],
+    queryKey: ["products", limit, categories, minPrice, maxPrice, sort],
     queryFn: ({ pageParam = 1 }) =>
       listProducts({
         page: pageParam,
-        pageSize,
+        limit,
         categories,
         minPrice,
         maxPrice,
@@ -29,7 +29,7 @@ export function useProducts(
       }),
     initialPageParam: 1,
     getNextPageParam: (lastPage) =>
-      resolveNextPage(lastPage.meta, lastPage.items.length, pageSize),
+      resolveNextPage(lastPage.meta, lastPage.items.length, limit),
     enabled,
   });
 }

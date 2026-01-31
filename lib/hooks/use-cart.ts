@@ -1,334 +1,218 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useAuthStore } from "@/app/stores/auth";
 import { useCartStore } from "@/app/stores/cart";
 import {
-  syncCartWithServer,
+  addToCart as apiAddToCart,
+  decrementCartItem,
   getCartByUser,
   getCartCount,
-  mapLocalItemsToCartInput,
+  incrementCartItem,
   mapServerCartItemsToLocal,
+  removeCartItem,
+  updateCartQty,
 } from "@/lib/api/cart";
-
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 import { Product } from "@/types/product";
-import { CartWithItems } from "@/types/cart";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
-interface CartMutationContext {
-  prevItems: ReturnType<typeof useCartStore.getState>["items"];
-}
+/* ============================
+   Shared rollback context
+============================ */
+// interface CartMutationContext {
+//   prevItems: CartItem[];
+// }
 
-// ==========================================
-// 🛒 ADD TO CART
-// ==========================================
-export function useAddToCart(
-  product: Product | null | undefined,
-  userId: string | null | undefined,
-) {
+const snapshot = () => useCartStore.getState().items.map((i) => ({ ...i }));
+
+/* ============================
+   🛒 ADD TO CART
+============================ */
+export function useAddToCart(product?: Product | null) {
   const router = useRouter();
-  const add = useCartStore((state) => state.add);
-  const queryClient = useQueryClient();
+  const user = useAuthStore((s) => s.user);
+  const add = useCartStore((s) => s.add);
+  const replaceAll = useCartStore((s) => s.replaceAll);
+  const qc = useQueryClient();
 
-  const mutation = useMutation<
-    CartWithItems | null,
-    unknown,
-    number | void,
-    CartMutationContext
-  >({
-    // ⚠️ mutationFn TIDAK perlu cek login lagi
+  return useMutation({
     mutationFn: async () => {
-      if (!product || !userId) return null;
+      if (!product) return null;
 
-      const localItems = useCartStore.getState().items;
-      const payloadItems = mapLocalItemsToCartInput(localItems);
-      if (payloadItems.length === 0) return null;
-
-      return syncCartWithServer({
-        userId,
-        items: payloadItems,
-      });
-    },
-
-    onMutate: async (qty = 1) => {
-      if (!product) return { prevItems: [] };
-
-      const prevItems = useCartStore
-        .getState()
-        .items.map((item) => ({ ...item }));
-
-      const quantity = typeof qty === "number" && qty > 0 ? qty : 1;
-      add(product, quantity);
-
-      return { prevItems };
-    },
-
-    onError: (error, _vars, context) => {
-      if (context?.prevItems) {
-        useCartStore.setState({ items: context.prevItems });
+      // ⛔ guard auth
+      if (!user) {
+        router.replace(`/login?next=/products/${product.slug}`);
+        throw new Error("UNAUTHENTICATED");
       }
-
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Failed to add product to cart.",
+      return apiAddToCart(
+        product.id,
+        1,
+        product.discountPriceCents ?? product.price,
       );
     },
 
-    onSuccess: (data) => {
-      if (data?.items || data?.data) {
-        const serverItems = mapServerCartItemsToLocal(data.items || data.data);
-        useCartStore.getState().replaceAll(serverItems);
+    onMutate: async () => {
+      if (!product) return { prevItems: [] };
+      const prevItems = snapshot();
+      add(product, 1);
+      return { prevItems };
+    },
+
+    onError: (_e, _v, ctx) => {
+      if (ctx?.prevItems) replaceAll(ctx.prevItems);
+      toast.error("Gagal menambahkan ke cart");
+    },
+
+    onSuccess: (res) => {
+      if (res?.items) {
+        replaceAll(mapServerCartItemsToLocal(res.items));
       }
-
-      queryClient.invalidateQueries({ queryKey: ["cart"] });
-      queryClient.invalidateQueries({ queryKey: ["cart-count"] });
-
-      toast.success("Product added to cart.");
+      qc.invalidateQueries({ queryKey: ["cart"] });
+      qc.invalidateQueries({ queryKey: ["cart-count"] });
+      toast.success("Produk ditambahkan");
     },
   });
-
-  // ✅ Wrapper function (GUARD LOGIN)
-  const addToCart = (qty?: number) => {
-    if (!userId) {
-      router.replace(`/login?next=/products/${product?.slug}`);
-      return;
-    }
-
-    mutation.mutate(qty);
-  };
-
-  return {
-    ...mutation,
-    addToCart,
-  };
 }
 
-// ==========================================
-// 📊 GET CART
-// ==========================================
-export function useCart(userId?: string) {
+/* ============================
+   📦 GET CART
+============================ */
+export function useCart(userId?: string, enabled = true) {
   return useQuery({
     queryKey: ["cart", userId],
-    queryFn: () => getCartByUser(userId!),
-    enabled: !!userId,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    enabled: enabled && !!userId,
+    staleTime: 1000 * 60 * 5,
+
+    queryFn: ({ queryKey }) => {
+      const [, uid] = queryKey as [string, string];
+      return getCartByUser();
+    },
   });
 }
 
-// ==========================================
-// 🔢 GET CART COUNT
-// ==========================================
-export function useCartCount(userId?: string) {
+/* ============================
+   🔢 CART COUNT
+============================ */
+export function useCartCount(enabled = true) {
   return useQuery({
-    queryKey: ["cart-count", userId],
-    queryFn: () => getCartCount(userId),
-    enabled: !!userId,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    queryKey: ["cart-count"],
+    queryFn: getCartCount,
+    enabled,
+    staleTime: 1000 * 60 * 5,
   });
 }
 
-// ==========================================
-// ➕ INCREMENT ITEM
-// ==========================================
-export function useIncrementCartItem(userId?: string) {
-  const inc = useCartStore((state) => state.inc);
-  const queryClient = useQueryClient();
+/* ============================
+   ➕ INCREMENT
+============================ */
+export function useIncrementCartItem() {
+  const inc = useCartStore((s) => s.inc);
+  const replaceAll = useCartStore((s) => s.replaceAll);
+  const qc = useQueryClient();
 
-  return useMutation<
-    CartWithItems | null,
-    unknown,
-    string,
-    CartMutationContext
-  >({
-    mutationFn: async (productId: string) => {
-      if (!userId) return null;
+  return useMutation({
+    mutationFn: (productId: string) => incrementCartItem(productId),
 
-      // ✅ Update local first (optimistic)
+    onMutate: async (productId) => {
+      const prevItems = snapshot();
       inc(productId);
-
-      // ✅ Kirim full cart ke server
-      const localItems = useCartStore.getState().items;
-      const payloadItems = mapLocalItemsToCartInput(localItems);
-
-      return syncCartWithServer({
-        userId,
-        items: payloadItems,
-      });
-    },
-
-    onMutate: async (productId) => {
-      const prevItems = useCartStore
-        .getState()
-        .items.map((item) => ({ ...item }));
       return { prevItems };
     },
 
-    onError: (error, _vars, context) => {
-      if (context?.prevItems) {
-        useCartStore.getState().replaceAll(context.prevItems);
-      }
-      toast.error("Failed to update cart.");
+    onError: (_e, _v, ctx) => {
+      if (ctx?.prevItems) replaceAll(ctx.prevItems);
+      toast.error("Gagal menambah qty");
     },
 
-    onSuccess: (data) => {
-      if (data?.items || data?.data) {
-        const serverItems = mapServerCartItemsToLocal(data.items || data.data);
-        useCartStore.getState().replaceAll(serverItems);
-      }
-      queryClient.invalidateQueries({ queryKey: ["cart"] });
+    onSuccess: (res) => {
+      if (res?.items) replaceAll(mapServerCartItemsToLocal(res.items));
+      qc.invalidateQueries({ queryKey: ["cart"] });
     },
   });
 }
 
-// ==========================================
-// ➖ DECREMENT ITEM
-// ==========================================
-export function useDecrementCartItem(userId?: string) {
-  const dec = useCartStore((state) => state.dec);
-  const queryClient = useQueryClient();
+/* ============================
+   ➖ DECREMENT
+============================ */
+export function useDecrementCartItem() {
+  const dec = useCartStore((s) => s.dec);
+  const replaceAll = useCartStore((s) => s.replaceAll);
+  const qc = useQueryClient();
 
-  return useMutation<
-    CartWithItems | null,
-    unknown,
-    string,
-    CartMutationContext
-  >({
-    mutationFn: async (productId: string) => {
-      if (!userId) return null;
+  return useMutation({
+    mutationFn: (productId: string) => decrementCartItem(productId),
 
-      // ✅ Update local first (optimistic)
+    onMutate: async (productId) => {
+      const prevItems = snapshot();
       dec(productId);
-
-      // ✅ Kirim full cart ke server
-      const localItems = useCartStore.getState().items;
-      const payloadItems = mapLocalItemsToCartInput(localItems);
-
-      return syncCartWithServer({
-        userId,
-        items: payloadItems,
-      });
-    },
-
-    onMutate: async (productId) => {
-      const prevItems = useCartStore
-        .getState()
-        .items.map((item) => ({ ...item }));
       return { prevItems };
     },
 
-    onError: (error, _vars, context) => {
-      if (context?.prevItems) {
-        useCartStore.getState().replaceAll(context.prevItems);
-      }
-      toast.error("Failed to update cart.");
+    onError: (_e, _v, ctx) => {
+      if (ctx?.prevItems) replaceAll(ctx.prevItems);
+      toast.error("Gagal mengurangi qty");
     },
 
-    onSuccess: (data) => {
-      if (data?.items || data?.data) {
-        const serverItems = mapServerCartItemsToLocal(data.items || data.data);
-        useCartStore.getState().replaceAll(serverItems);
-      }
-      queryClient.invalidateQueries({ queryKey: ["cart"] });
+    onSuccess: (res) => {
+      if (res?.items) replaceAll(mapServerCartItemsToLocal(res.items));
+      qc.invalidateQueries({ queryKey: ["cart"] });
     },
   });
 }
 
-// ==========================================
-// 🗑️ REMOVE ITEM
-// ==========================================
-export function useRemoveCartItem(userId?: string) {
-  const remove = useCartStore((state) => state.remove);
-  const queryClient = useQueryClient();
+/* ============================
+   ✏️ UPDATE QTY (INPUT)
+============================ */
+export function useUpdateCartQty() {
+  const replaceAll = useCartStore((s) => s.replaceAll);
+  const qc = useQueryClient();
 
-  return useMutation<
-    CartWithItems | null,
-    unknown,
-    string,
-    CartMutationContext
-  >({
-    mutationFn: async (productId: string) => {
-      if (!userId) return null;
+  return useMutation({
+    mutationFn: ({ productId, qty }: { productId: string; qty: number }) =>
+      updateCartQty(productId, qty),
 
-      // ✅ Update local first (optimistic)
+    onMutate: async () => {
+      return { prevItems: snapshot() };
+    },
+
+    onError: (_e, _v, ctx) => {
+      if (ctx?.prevItems) replaceAll(ctx.prevItems);
+      toast.error("Gagal update qty");
+      console.log(_e);
+    },
+
+    onSuccess: (res) => {
+      if (res?.items) replaceAll(mapServerCartItemsToLocal(res.items));
+      qc.invalidateQueries({ queryKey: ["cart"] });
+    },
+  });
+}
+
+/* ============================
+   🗑️ REMOVE ITEM
+============================ */
+export function useRemoveCartItem() {
+  const remove = useCartStore((s) => s.remove);
+  const replaceAll = useCartStore((s) => s.replaceAll);
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: (productId: string) => removeCartItem(productId),
+
+    onMutate: async (productId) => {
+      const prevItems = snapshot();
       remove(productId);
-
-      // ✅ Kirim full cart ke server
-      const localItems = useCartStore.getState().items;
-      const payloadItems = mapLocalItemsToCartInput(localItems);
-
-      return syncCartWithServer({
-        userId,
-        items: payloadItems,
-      });
-    },
-
-    onMutate: async (productId) => {
-      const prevItems = useCartStore
-        .getState()
-        .items.map((item) => ({ ...item }));
       return { prevItems };
     },
 
-    onError: (error, _vars, context) => {
-      if (context?.prevItems) {
-        useCartStore.getState().replaceAll(context.prevItems);
-      }
-      toast.error("Failed to remove item.");
+    onError: (_e, _v, ctx) => {
+      if (ctx?.prevItems) replaceAll(ctx.prevItems);
+      toast.error("Gagal menghapus item");
     },
 
-    onSuccess: (data) => {
-      if (data?.items || data?.data) {
-        const serverItems = mapServerCartItemsToLocal(data.items || data.data);
-        useCartStore.getState().replaceAll(serverItems);
-      }
-      queryClient.invalidateQueries({ queryKey: ["cart"] });
-      toast.success("Item removed from cart.");
-    },
-  });
-}
-
-// ==========================================
-// 🔄 SYNC CART FROM SERVER
-// ==========================================
-export function useSyncCart(userId?: string) {
-  const syncFromServer = useCartStore((state) => state.syncFromServer);
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async () => {
-      if (!userId) return;
-      await syncFromServer(userId);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["cart"] });
-      queryClient.invalidateQueries({ queryKey: ["cart-count"] });
-    },
-  });
-}
-
-// ==========================================
-// 🗑️ CLEAR CART
-// ==========================================
-export function useClearCart(userId?: string) {
-  const clear = useCartStore((state) => state.clear);
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async () => {
-      if (!userId) return null;
-
-      // ✅ Clear local cart
-      clear();
-
-      // ✅ Sync dengan server (empty cart)
-      return syncCartWithServer({
-        userId,
-        items: [],
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["cart"] });
-      queryClient.invalidateQueries({ queryKey: ["cart-count"] });
-      toast.success("Cart cleared.");
+    onSuccess: (res) => {
+      if (res?.items) replaceAll(mapServerCartItemsToLocal(res.items));
+      qc.invalidateQueries({ queryKey: ["cart"] });
+      toast.success("Item dihapus");
     },
   });
 }

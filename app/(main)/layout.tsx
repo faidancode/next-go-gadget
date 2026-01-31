@@ -21,11 +21,11 @@ export default async function MainLayout({
     <div className="mx-auto w-full max-w-7xl flex-1 flex flex-col pb-6 lg:pb-0">
       <Navbar />
       <main className="flex-1 py-4">{children}</main>
-      <Script
+      {/* <Script
         src={process.env.NEXT_PUBLIC_MIDTRANS_SNAP_URL}
         data-client-key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY}
         strategy="lazyOnload"
-      />
+      /> */}
       <Footer />
     </div>
   );

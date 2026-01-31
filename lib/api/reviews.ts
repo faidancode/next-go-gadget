@@ -106,7 +106,7 @@ export async function listReviewsByUser(
   userId: string,
   params?: {
     page?: number;
-    pageSize?: number;
+    limit?: number;
     sorter?: string;
     ratingFilter?: number | string;
   },
@@ -116,10 +116,10 @@ export async function listReviewsByUser(
   }
 
   const page = params?.page ?? 1;
-  const pageSize = params?.pageSize ?? 10;
+  const limit = params?.limit ?? 10;
 
   const payload = await apiRequest<unknown>(
-    `/products/user/${userId}/reviews?page=${page}&pageSize=${pageSize}`,
+    `/products/user/${userId}/reviews?page=${page}&limit=${limit}`,
   );
 
   // Try parsing with schema first
@@ -196,14 +196,14 @@ export async function getProductReviews(
   slug: string,
   params: {
     page: number;
-    pageSize: number;
+    limit: number;
     sort?: string;
     rating?: number;
   },
 ): Promise<ApiEnvelope<ProductReviewsPageData>> {
   const query = new URLSearchParams({
     page: params.page.toString(),
-    pageSize: params.pageSize.toString(),
+    limit: params.limit.toString(),
     ...(params.sort && { sort: params.sort }),
     ...(params.rating && { rating: params.rating.toString() }),
   });

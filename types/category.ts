@@ -13,7 +13,7 @@ export type CategoryListParams = {
   page?: number;
   search?: string;
   sort?: string;
-  pageSize?: number;
+  limit?: number;
 };
 
 export type CategoryListResponse = {

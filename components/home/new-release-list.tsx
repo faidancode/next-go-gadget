@@ -8,7 +8,7 @@ import LinkButton from "../shared/link-button";
 
 export function NewRelease() {
   const { data, isLoading, isError, refetch } = useProducts({
-    pageSize: 10,
+    limit: 10,
     sort: "newest",
   });
 

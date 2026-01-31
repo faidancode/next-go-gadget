@@ -2,15 +2,15 @@ import { useQuery } from "@tanstack/react-query";
 import { getCategory, getCategories } from "../api/category";
 
 // hooks/use-category.ts
-export function useCategories(params?: { scope?: string; pageSize?: number }) {
-  const pageSize = params?.pageSize ?? 100;
+export function useCategories(params?: { scope?: string; limit?: number }) {
+  const limit = params?.limit ?? 100;
   const scope = params?.scope ?? "general";
 
   return useQuery({
-    queryKey: ["categories", { scope, pageSize }],
+    queryKey: ["categories", { scope, limit }],
     queryFn: async () => {
       try {
-        const result = await getCategories(1, pageSize);
+        const result = await getCategories(1, limit);
         return result;
       } catch (error) {
         throw error;

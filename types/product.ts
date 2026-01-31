@@ -32,7 +32,7 @@ export type ProductDetail = Product & {
 
 export type ProductListParams = {
   page?: number;
-  pageSize?: number;
+  limit?: number;
   search?: string;
   categories?: string[];
   category?: string;

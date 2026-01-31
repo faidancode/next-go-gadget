@@ -2,12 +2,12 @@ export type ApiEnvelope<T> = {
   data: T;
   meta: Record<string, unknown>;
   error: Record<string, unknown>;
-  success: boolean;
+  ok: boolean;
 };
 
 export type PaginationMeta = {
   page?: number;
-  pageSize?: number;
+  limit?: number;
   total?: number;
   totalPages?: number;
   [key: string]: unknown;

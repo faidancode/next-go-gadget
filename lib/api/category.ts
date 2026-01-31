@@ -7,12 +7,11 @@ const CATEGORY_ENDPOINT = "/categories";
 
 export async function getCategories(
   page: number,
-  pageSize: number,
+  limit: number,
 ): Promise<CategoryListResponse> {
-  const query = buildQueryString({ page, pageSize });
+  const query = buildQueryString({ page, limit });
   const path = query ? `/categories?${query}` : "/categories";
 
-  console.log({ path });
   try {
     const envelope = await apiRequest<Category[]>(path);
 

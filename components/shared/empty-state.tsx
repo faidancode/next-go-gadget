@@ -27,13 +27,13 @@ export function EmptyState({
         className="mx-auto mb-6"
       />
       <div>
-        <p className="text-secondary text-2xl font-semibold">{title}</p>
+        <p className="text-2xl font-semibold">{title}</p>
         <p className="text-sm text-gray-400">{description}</p>
       </div>
       {showButton && (
         <Link href={href} className="mt-4">
-        <Button variant="secondary">{linkText}</Button>
-      </Link>
+          <Button>{linkText}</Button>
+        </Link>
       )}
     </div>
   );

@@ -1,131 +1,141 @@
-import type { CartItem as LocalCartItem } from "@/app/stores/cart";
-import { apiRequest } from "./fetcher";
+import { CartItem } from "@/app/stores/cart";
+import { apiRequest, unwrapEnvelope } from "./fetcher";
 import { unwrapSingle } from "./normalizers";
-import {
-  CartItem,
-  CartItemInput,
-  CartMergeInput,
-  CartWithItems,
-} from "@/types/cart";
+import { ServerCartItem, ServerCartResponse } from "../validations/cart-schema";
 
 const CART_ENDPOINT = "/carts";
 
-export function mapLocalItemsToCartInput(
-  items: LocalCartItem[],
-): CartItemInput[] {
-  if (!Array.isArray(items) || items.length === 0) {
-    return [];
-  }
-  return items
-    .filter((item) => item && item.qty > 0)
-    .map((item) => ({
-      productId: item.id,
-      quantity: item.qty,
-      priceCentsAtAdd: item.price,
-    }));
-}
+export const mapServerCartItemsToLocal = (
+  items: ServerCartItem[],
+): CartItem[] => {
+  return items.map((item) => ({
+    id: item.productId,
+    name: item.name,
+    slug: item.slug,
+    price: item.price,
+    imageUrl: item.imageUrl,
+    category: item.category,
+    qty: item.qty,
+    cartItemId: item.id,
+  }));
+};
 
-export function mapServerCartItemsToLocal(items?: CartItem[]): LocalCartItem[] {
-  if (!Array.isArray(items) || items.length === 0) return [];
+/* =======================
+    API Calls
+======================= */
 
-  const localItems: LocalCartItem[] = [];
-
-  for (const item of items) {
-    if (!item) continue;
-    const id = item.productId;
-    if (!id) continue;
-
-    localItems.push({
-      id,
-      title: item.productTitle ?? "Untitled",
-      slug: item.productSlug,
-      author: item.productAuthor ?? undefined,
-      price: item.priceCentsAtAdd ?? 0,
-      imageUrl: item.productCoverUrl ?? "",
-      category: item.categoryId ?? "",
-      qty: item.quantity ?? 1,
-      cartItemId: item.id,
-    });
-  }
-
-  return localItems;
-}
-
-export async function replaceCart(
-  input: CartMergeInput,
-): Promise<CartWithItems | null> {
-  if (!input.userId) {
-    throw new Error("userId is required");
-  }
-  const payload = await apiRequest<unknown>(`${CART_ENDPOINT}`, input, {
-    method: "POST",
-  });
-  return unwrapSingle<CartWithItems>(payload);
-}
-
-// Alias untuk backward compatibility
-export const syncCartWithServer = replaceCart;
-
-export async function getCartByUser(
-  userId: string,
-): Promise<CartWithItems | null> {
-  if (!userId) {
+/**
+ * GET /carts/detail
+ */
+export const getCartByUser = async (): Promise<ServerCartResponse | null> => {
+  try {
+    const payload = await apiRequest<ServerCartResponse>(
+      `${CART_ENDPOINT}/detail`,
+    );
+    // Menggunakan unwrapSingle jika payload dibungkus envelope atau langsung return null jika 404
+    return unwrapSingle<ServerCartResponse>(payload);
+  } catch (error) {
+    // Menangani error 404 sebagai null sesuai logika awal kamu
     return null;
   }
-  const payload = await apiRequest<unknown>(`${CART_ENDPOINT}/detail`);
-  return unwrapSingle<CartWithItems>(payload);
-}
+};
 
-function parseCartCount(payload: unknown): number {
-  if (typeof payload === "number") return payload;
-  if (typeof payload === "string" && payload.trim().length > 0) {
-    const parsed = Number(payload);
-    if (!Number.isNaN(parsed)) {
-      return parsed;
-    }
-  }
-  if (payload && typeof payload === "object") {
-    const record = payload as Record<string, unknown>;
-    const candidates = [
-      record.count,
-      record.data && typeof record.data === "object"
-        ? (record.data as Record<string, unknown>).count
-        : undefined,
-    ];
-    for (const candidate of candidates) {
-      if (typeof candidate === "number") {
-        return candidate;
-      }
-      if (typeof candidate === "string" && candidate.trim().length > 0) {
-        const parsed = Number(candidate);
-        if (!Number.isNaN(parsed)) {
-          return parsed;
-        }
-      }
-    }
-  }
-  throw new Error("Invalid cart count response");
-}
+/**
+ * POST /carts
+ * Replace full cart
+ */
+export const replaceCart = async (
+  items: { productId: string; qty: number; price: number }[],
+) => {
+  const envelope = await apiRequest<ServerCartResponse>(CART_ENDPOINT, {
+    method: "POST",
+    body: JSON.stringify({ items }),
+  });
+  return unwrapEnvelope(envelope, "Failed to replace cart");
+};
 
-export async function getCartCount(userId?: string): Promise<number> {
-  if (!userId) {
-    return 0;
-  }
-  const payload = await apiRequest<unknown>(`${CART_ENDPOINT}/count`);
-  return parseCartCount(payload);
-}
+/**
+ * POST /carts/items/:productId/increment
+ * Add item atau increment
+ */
+export const addToCart = async (
+  productId: string,
+  qty: number,
+  price: number,
+) => {
+  const envelope = await apiRequest<any>(
+    `${CART_ENDPOINT}/items/${productId}`,
+    { productId, qty, price },
+  );
+  return unwrapEnvelope(envelope, "Failed to add to cart");
+};
 
-export async function updateCartItemQuantity(
-  itemId: string,
-  quantity: number,
-): Promise<CartWithItems | null> {
-  if (!itemId) {
-    throw new Error("itemId is required");
-  }
-  const payload = await apiRequest<unknown>(
-    `${CART_ENDPOINT}/items/${encodeURIComponent(itemId)}`,
-    { quantity },
+/**
+ * PATCH /carts/items/:productId
+ */
+export const updateCartQty = async (productId: string, qty: number) => {
+  const envelope = await apiRequest<any>(
+    `${CART_ENDPOINT}/items/${productId}`,
+    { qty },
     { method: "PATCH" },
   );
-  return unwrapSingle<CartWithItems>(payload);
-}
+  return unwrapEnvelope(envelope, "Failed to update quantity");
+};
+
+/**
+ * POST /carts/items/:productId/increment
+ */
+export const incrementCartItem = async (productId: string) => {
+  const envelope = await apiRequest<any>(
+    `${CART_ENDPOINT}/items/${productId}/increment`,
+    {
+      method: "POST",
+    },
+  );
+  return unwrapEnvelope(envelope, "Failed to increment item");
+};
+
+/**
+ * POST /carts/items/:productId/decrement
+ */
+export const decrementCartItem = async (productId: string) => {
+  const envelope = await apiRequest<any>(
+    `${CART_ENDPOINT}/items/${productId}/decrement`,
+    {
+      method: "POST",
+    },
+  );
+  return unwrapEnvelope(envelope, "Failed to decrement item");
+};
+
+/**
+ * DELETE /carts/items/:productId
+ */
+export const removeCartItem = async (productId: string) => {
+  const envelope = await apiRequest<any>(
+    `${CART_ENDPOINT}/items/${productId}`,
+    {
+      method: "DELETE",
+    },
+  );
+  return unwrapEnvelope(envelope, "Failed to remove item");
+};
+
+/**
+ * DELETE /carts
+ */
+export const clearCart = async () => {
+  const envelope = await apiRequest<any>(CART_ENDPOINT, {
+    method: "DELETE",
+  });
+  return unwrapEnvelope(envelope, "Failed to clear cart");
+};
+
+/**
+ * GET /carts/count
+ */
+export const getCartCount = async (): Promise<{ count: number }> => {
+  const payload = await apiRequest<{ count: number }>(`${CART_ENDPOINT}/count`);
+  const data = unwrapSingle<{ count: number }>(payload);
+  return data || { count: 0 };
+};

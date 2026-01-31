@@ -38,6 +38,7 @@ export function Navbar() {
     }
   }
   const totalItems = useCartStore(selectTotalItems);
+
   const [drawerOpen, setDrawerOpen] = useState(false);
   const pathname = usePathname();
 
@@ -114,16 +115,13 @@ export function Navbar() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
-                className="hover:cursor-pointer rounded-full bg-tertiary p-2"
+                className="hover:cursor-pointer rounded-full border hover:border-primary hover:text-primary  p-3"
                 aria-label="Open account menu"
               >
-                <UserIcon className="w-5 h-5" />
+                <UserIcon size={16} />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="end"
-              className="w-40 bg-tertiary text-white border border-white/10 "
-            >
+            <DropdownMenuContent align="end" className="w-40 border  ">
               <DropdownMenuItem
                 onSelect={() => {
                   router.push("/account");

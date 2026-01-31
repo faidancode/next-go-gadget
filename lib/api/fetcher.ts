@@ -80,6 +80,17 @@ function extractMessage(body: unknown): string {
   return "";
 }
 
+function isRequestOptions(value: unknown): value is ApiRequestInit {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    ("method" in value ||
+      "headers" in value ||
+      "cache" in value ||
+      "credentials" in value)
+  );
+}
+
 // =====================
 // Low-level fetch
 // =====================
@@ -94,35 +105,38 @@ async function apiFetch(
     ...options,
     headers: {
       "X-Client-Type": "web-customer",
-      ...(options.headers || {}), // ⬅️ HANYA dari caller
+      ...(options.headers || {}),
     },
   });
 
+  // 1. Handle Refresh Token (Tetap sama)
   if (res.status === 401 && !options.__retry && !shouldSkipRefresh(path)) {
     const refreshed = await refreshAccessToken();
-
     if (refreshed) {
-      return apiFetch(path, {
-        ...options,
-        __retry: true, // ⛔ prevent infinite loop
-      });
+      return apiFetch(path, { ...options, __retry: true });
     }
   }
 
+  // 2. Handle Error Response
   if (!res.ok) {
-    let body: unknown;
+    const rawBody = await res.text(); // Ambil teksnya SEKALI saja
+    let body: any;
+
     try {
-      body = await res.json();
+      body = JSON.parse(rawBody); // Coba parse manual
     } catch {
-      body = await res.text();
+      body = rawBody; // Kalau bukan JSON, biarkan jadi string
     }
 
     const message = extractMessage(body) || res.statusText || "Request failed";
-
     throw new ApiError(res.status, message, body);
   }
 
+  // 3. Handle Success Response
   if (options.raw) return res;
+
+  // Hati-hati: res.json() di sini aman karena res.ok bernilai true
+  // dan stream-nya belum pernah dibaca di atas.
   return res.json();
 }
 
@@ -135,15 +149,11 @@ export async function apiRequest<T>(
   bodyOrOptions?: unknown,
   maybeOptions: ApiRequestInit = {},
 ): Promise<ApiEnvelope<T>> {
-  const isOptionsOnly =
-    bodyOrOptions &&
-    typeof bodyOrOptions === "object" &&
-    ("method" in bodyOrOptions || "headers" in bodyOrOptions);
-
-  const body = isOptionsOnly ? undefined : bodyOrOptions;
-  const options = isOptionsOnly
-    ? (bodyOrOptions as ApiRequestInit)
+  const options = isRequestOptions(bodyOrOptions)
+    ? bodyOrOptions
     : maybeOptions;
+
+  const body = isRequestOptions(bodyOrOptions) ? undefined : bodyOrOptions;
 
   const isFormData = body instanceof FormData;
 
@@ -176,7 +186,7 @@ export function unwrapEnvelope<T>(
   envelope: ApiEnvelope<T>,
   fallback = "Request failed",
 ): T {
-  if (envelope.success) return envelope.data;
+  if (envelope.ok) return envelope.data;
 
   const message =
     typeof envelope.error?.message === "string"

@@ -10,12 +10,13 @@ import {
   getCartCount,
   mapServerCartItemsToLocal,
 } from "../api/cart";
-import { CartItem, User } from "@/types";
 import {
   LoginFormValues,
   RegisterFormValues,
   RequestPasswordResetInput,
 } from "../validations/auth-schema";
+import { CartItem } from "@/types/cart";
+import { User } from "@/types/user";
 
 type RegisterResponse = {
   message?: string;
@@ -23,9 +24,9 @@ type RegisterResponse = {
 
 // --- tipe respons sesuai API kamu ---
 type LoginSuccessData = {
-  userId: string;
   role: string;
   user: {
+    id?: string | null;
     name?: string | null;
     email?: string | null;
   };
@@ -101,38 +102,45 @@ export function useLogin() {
   const authLogin = useAuthStore((state) => state.login);
   const cartStore = useCartStore.getState();
 
+  const fetchCartTotalAndSync = async (userId: string) => {
+    const cartData = await getCartByUser(); // dari API
+    const serverItems = cartData?.items ?? [];
+    const mappedItems = mapServerCartItemsToLocal(serverItems);
+    useCartStore.getState().replaceAll(mappedItems); // update store sekaligus totalItems
+  };
+
   return useMutation({
     mutationFn: loginUser,
     onSuccess: async (response) => {
       if (!response.ok || !response.data) throw new Error("Failed to login.");
-
-      const { userId, user, role } = response.data;
-      if (!user?.email) throw new Error("Invalid response from server.");
-
+      console.log(response.data);
+      const { user, role } = response.data;
+      if (!user?.email || !user?.id || !user?.name)
+        throw new Error("Invalid response from server.");
       // 1. Map & Simpan User ke Zustand
       const mappedUser: User = {
-        id: userId,
+        id: user.id,
         email: user.email,
-        name: user.name || user.email,
-        role: role as any,
+        name: user.name,
+        role: role,
       };
       authLogin(mappedUser);
 
       // 2. Sinkronisasi Keranjang (Hydration)
       try {
         const [serverCart, count] = await Promise.all([
-          getCartByUser(userId),
-          getCartCount(userId),
+          getCartByUser(),
+          getCartCount(),
         ]);
 
-        const normalized = mapServerCartItemsToLocal(serverCart?.data ?? []);
+        const normalized = mapServerCartItemsToLocal(serverCart?.items ?? []);
 
         if (normalized.length > 0) {
           cartStore.replaceAll(normalized);
         } else {
           cartStore.clear();
         }
-        cartStore.setCartTotalItems(count);
+        fetchCartTotalAndSync;
       } catch (error) {
         console.error("Cart sync failed:", error);
       }

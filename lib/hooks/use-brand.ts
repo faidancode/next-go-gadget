@@ -2,15 +2,15 @@ import { useQuery } from "@tanstack/react-query";
 import { getBrand, getBrands } from "../api/brand";
 
 // hooks/use-Brand.ts
-export function useBrands(params?: { scope?: string; pageSize?: number }) {
-  const pageSize = params?.pageSize ?? 100;
+export function useBrands(params?: { scope?: string; limit?: number }) {
+  const limit = params?.limit ?? 100;
   const scope = params?.scope ?? "general";
 
   return useQuery({
-    queryKey: ["Brands", { scope, pageSize }],
+    queryKey: ["Brands", { scope, limit }],
     queryFn: async () => {
       try {
-        const result = await getBrands(1, pageSize);
+        const result = await getBrands(1, limit);
         return result;
       } catch (error) {
         throw error;

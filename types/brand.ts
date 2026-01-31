@@ -13,7 +13,7 @@ export type BrandListParams = {
   page?: number;
   search?: string;
   sort?: string;
-  pageSize?: number;
+  limit?: number;
 };
 
 export type BrandListResponse = {

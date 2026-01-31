@@ -65,10 +65,8 @@ export default function ProductDetailPage() {
     error: productError,
   } = useProduct(slug, userId ?? "guest");
 
-  const { addToCart, isPending: isPendingAddToCart } = useAddToCart(
-    product,
-    user?.id,
-  );
+  const { mutate: addToCart, isPending: isPendingAddToCart } =
+    useAddToCart(product);
   const { data: wishlist } = useWishlist(userId);
   const { data: wishlistCheck } = useWishlistCheck(product?.id, userId);
   const { addToWishlist, isPending: isPendingAddToWishlist } =
@@ -241,7 +239,7 @@ export default function ProductDetailPage() {
               </Button>
 
               <Button
-                onClick={() => addToCart(1)}
+                onClick={() => addToCart()}
                 disabled={isPendingAddToCart}
                 className="font-semibold disabled:cursor-not-allowed disabled:opacity-50"
               >

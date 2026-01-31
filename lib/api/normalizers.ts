@@ -2,7 +2,7 @@ export type PaginationMeta = {
   total?: number;
   totalPages?: number;
   page?: number;
-  pageSize?: number;
+  limit?: number;
   nextPage?: number | null;
   prevPage?: number | null;
   hasNextPage?: boolean;
@@ -79,7 +79,7 @@ export function unwrapSingle<T>(payload: unknown): T | null {
 export function resolveNextPage(
   meta: PaginationMeta | undefined,
   lastItemsLength: number,
-  pageSize?: number
+  limit?: number
 ) {
   if (!meta) return undefined;
   if (typeof meta.nextPage === "number") return meta.nextPage;
@@ -95,13 +95,13 @@ export function resolveNextPage(
   if (typeof meta.page === "number" && typeof meta.totalPages === "number") {
     return meta.page < meta.totalPages ? meta.page + 1 : undefined;
   }
-  if (typeof meta.page === "number" && pageSize && lastItemsLength < pageSize) {
+  if (typeof meta.page === "number" && limit && lastItemsLength < limit) {
     return undefined;
   }
   if (typeof meta.page === "number") {
     return meta.page + 1;
   }
-  if (pageSize && lastItemsLength < pageSize) {
+  if (limit && lastItemsLength < limit) {
     return undefined;
   }
   return undefined;

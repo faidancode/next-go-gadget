@@ -9,13 +9,12 @@ export async function listProducts<TProduct extends Product = Product>(
 ): Promise<ListResult<TProduct>> {
   const query = buildQueryString({
     page: params?.page,
-    pageSize: params?.pageSize,
+    limit: params?.limit,
     search: params?.search,
-    categories: params?.categories,
-    category: params?.category ?? params?.categories?.[0],
-    minPrice: params?.minPrice,
-    maxPrice: params?.maxPrice,
-    sort: params?.sort,
+    category_ids: params?.categories,
+    min_price: params?.minPrice,
+    max_price: params?.maxPrice,
+    sort_by: params?.sort,
   });
 
   const endpoint = query ? `${PRODUCTS_ENDPOINT}?${query}` : PRODUCTS_ENDPOINT;

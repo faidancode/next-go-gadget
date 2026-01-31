@@ -27,7 +27,7 @@ export function useProductReviews(
     queryFn: ({ pageParam = 1 }) => {
       return getProductReviews(slug, {
         page: pageParam as number,
-        pageSize: 12,
+        limit: 12,
         sort: sorter,
         rating: ratingFilter === "All" ? undefined : Number(ratingFilter),
       });
@@ -47,7 +47,7 @@ export function useReviewsByUser(userId: string | null | undefined) {
       }
       return listReviewsByUser(userId, {
         page: pageParam,
-        pageSize: 5,
+        limit: 5,
       });
     },
 

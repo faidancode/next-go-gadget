@@ -73,7 +73,7 @@ export function Brands() {
         ) : (
           <div className="col-span-full flex flex-col items-center justify-center rounded-2xl border border-dashed border-border p-12 text-center">
             <p className="text-sm text-muted-foreground">
-              There are no categories to display yet.
+              There are no brands to display yet.
             </p>
           </div>
         )}

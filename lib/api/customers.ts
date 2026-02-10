@@ -9,37 +9,23 @@ export const updateProfileInputSchema = z
     name: z.string().trim().min(2, "Name must be at least 2 characters"),
     password: z
       .string()
-      .optional()
-      .transform((val) => (val ?? "").trim())
+      .trim()
       .refine(
-        (val) => val.length === 0 || val.length >= 6,
-        "Password must be at least 6 characters"
-      )
-      .transform((val) => (val.length === 0 ? undefined : val)),
-    confirmPassword: z
-      .string()
-      .optional()
-      .transform((val) => (val ?? "").trim()),
+        (val) => val === "" || val.length >= 6,
+        "Password must be at least 6 characters",
+      ),
+    confirmPassword: z.string().trim(),
   })
-  .superRefine((val, ctx) => {
-    if (val.password && val.confirmPassword !== val.password) {
-      ctx.addIssue({
-        code: "custom",
-        message: "Passwords do not match",
-        path: ["confirmPassword"],
-      });
-    }
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
   })
-  .transform((val) => ({
-    name: val.name.trim(),
-    password: val.password,
-  }));
 
-export type UpdateProfileInput = z.input<typeof updateProfileInputSchema>;
+export type UpdateProfileFormInput = z.input<typeof updateProfileInputSchema>;
 export type UpdateProfilePayload = z.output<typeof updateProfileInputSchema>;
 
 export async function updateCustomerProfile(
-  input: UpdateProfileInput
+  input: UpdateProfileFormInput,
 ): Promise<User | null> {
   const payload = updateProfileInputSchema.parse(input);
   const res = await apiRequest<unknown>("/customers/profile", payload, {

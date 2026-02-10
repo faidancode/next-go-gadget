@@ -8,22 +8,26 @@ import { getErrorMessage } from "@/lib/api/fetcher";
 import { toast } from "sonner";
 import { useAuthStore } from "@/app/stores/auth";
 import {
-  UpdateProfileInput,
+  UpdateProfileFormInput,
   updateProfileInputSchema,
   useUpdateCustomerProfile,
 } from "@/lib/api/customers";
+import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 
 export function AccountView({ user }: { user: User | null }) {
   const login = useAuthStore((s) => s.login);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
-  } = useForm<UpdateProfileInput>({
+  } = useForm<UpdateProfileFormInput>({
     resolver: zodResolver(updateProfileInputSchema),
     defaultValues: {
-      name: user?.name ?? "",
+      name: user?.name || "",
       password: "",
       confirmPassword: "",
     },
@@ -31,7 +35,7 @@ export function AccountView({ user }: { user: User | null }) {
 
   const updateProfileMutation = useUpdateCustomerProfile();
 
-  const onSubmit = async (values: UpdateProfileInput) => {
+  const onSubmit = async (values: UpdateProfileFormInput) => {
     if (!user?.id) {
       toast.error("Please log in to update your profile.");
       return;
@@ -72,7 +76,11 @@ export function AccountView({ user }: { user: User | null }) {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="space-y-1">
             <label className="block text-xs">Name</label>
-            <Input {...register("name")} placeholder="Full name" />
+            <Input
+              {...register("name")}
+              placeholder="Full name"
+              autoComplete="name"
+            />
             {errors.name?.message && (
               <p className="text-xs text-destructive">{errors.name.message}</p>
             )}
@@ -83,11 +91,23 @@ export function AccountView({ user }: { user: User | null }) {
           </div>
           <div className="space-y-1">
             <label className="block text-xs">New Password</label>
-            <Input
-              type="password"
-              placeholder="Leave blank to keep current password"
-              {...register("password")}
-            />
+            <label className="block text-xs text-indigo-500">
+              *Leave blank to keep current password
+            </label>
+            <div className="relative">
+              <Input
+                type={showPassword ? "text" : "password"}
+                placeholder=""
+                {...register("password")}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
             {errors.password?.message && (
               <p className="text-xs text-destructive">
                 {errors.password.message}
@@ -95,14 +115,24 @@ export function AccountView({ user }: { user: User | null }) {
             )}
           </div>
           <div className="space-y-1">
-            <label className="block text-xs">
-              Confirm Password
+            <label className="block text-xs">Confirm Password</label>
+            <label className="block text-xs text-indigo-500">
+              *Confirm the new password
             </label>
-            <Input
-              type="password"
-              placeholder="Repeat the new password"
-              {...register("confirmPassword")}
-            />
+            <div className="relative">
+              <Input
+                type={showConfirmPassword ? "text" : "password"}
+                placeholder="Repeat the new password"
+                {...register("confirmPassword")}
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
             {errors.confirmPassword?.message && (
               <p className="text-xs text-destructive">
                 {errors.confirmPassword.message}

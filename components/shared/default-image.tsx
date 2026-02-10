@@ -6,9 +6,16 @@ import { cn } from "@/lib/utils";
 interface DefaultImageProps {
   className?: string;
   iconClassName?: string;
+  logoSize?: number; // Ukuran logo dalam piksel, default 40
+  logoOnly?: boolean; // Jika true, hanya tampilkan logo tanpa teks
 }
 
-export function DefaultImage({ className, iconClassName }: DefaultImageProps) {
+export function DefaultImage({
+  className,
+  iconClassName,
+  logoSize = 40,
+  logoOnly = false,
+}: DefaultImageProps) {
   return (
     <div
       className={cn(
@@ -18,7 +25,7 @@ export function DefaultImage({ className, iconClassName }: DefaultImageProps) {
     >
       <div className={cn("opacity-20 grayscale", iconClassName)}>
         {/* Menggunakan Logo sebagai fallback icon */}
-        <Logo />
+        <Logo width={logoSize} height={logoSize} logoOnly={logoOnly} />
       </div>
 
       {/* Opsional: Badge kecil penanda no-image */}

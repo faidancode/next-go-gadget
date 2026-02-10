@@ -32,10 +32,10 @@ export type Order = {
   paymentStatus: string;
 
   addressSnapshot: OrderAddressSnapshot;
-  subtotalCents: number;
-  discountCents: number;
-  shippingCents: number;
-  totalCents: number;
+  subtotalPrice: number;
+  discount: number;
+  shippingPrice: number;
+  totalPrice: number;
   note?: string | null;
   placedAt: string;
   paidAt?: string | null;

@@ -2,14 +2,13 @@ export type OrderItem = {
   id: string;
   orderId: string;
   productId: string;
-  productTitle: string;
+  productName: string;
   productCoverUrl: string;
-  productAuthor: string;
   productSlug: string;
-  titleSnapshot: string;
-  unitPriceCents: number;
+  nameSnapshot: string;
+  unitPrice: number;
   quantity: number;
-  totalCents: number;
+  subtotal: number;
 
   createdAt: string;
   updatedAt?: string | null;

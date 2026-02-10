@@ -12,12 +12,11 @@ const reviewSchema = z.object({
   id: z.string(),
   productId: z.string().optional().nullable(),
   productSlug: z.string().optional().nullable(),
-  productTitle: z.string().optional().nullable(),
+  productName: z.string().optional().nullable(),
   productCoverUrl: z.string().optional().nullable(),
-  productAuthorName: z.string().optional().nullable(),
   rating: z.number(),
   title: z.string().optional().nullable(),
-  body: z.string().optional().nullable(),
+  comment: z.string().optional().nullable(),
   createdAt: z.string(),
 });
 
@@ -119,7 +118,7 @@ export async function listReviewsByUser(
   const limit = params?.limit ?? 10;
 
   const payload = await apiRequest<unknown>(
-    `/products/user/${userId}/reviews?page=${page}&limit=${limit}`,
+    `/reviews?page=${page}&limit=${limit}`,
   );
 
   // Try parsing with schema first
@@ -160,7 +159,7 @@ export async function checkReviewEligibility(
     `/products/${slug}/reviews/eligibility`,
   );
 
-  if (!response?.success || !response?.data) {
+  if (!response?.ok || !response?.data) {
     throw new Error("Failed to check review eligibility.");
   }
 

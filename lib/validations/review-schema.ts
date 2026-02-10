@@ -1,5 +1,18 @@
 import { z } from "zod";
 
+export const reviewApiSchema = z.object({
+  id: z.string(),
+  productId: z.string().nullable().optional(),
+  productSlug: z.string().nullable().optional(),
+  productName: z.string().nullable().optional(),
+  productCoverUrl: z.string().nullable().optional(),
+  rating: z.number(),
+  title: z.string().nullable().optional(),
+  comment: z.string().nullable().optional(),
+  createdAt: z.string(),
+});
+export type ReviewListItem = z.infer<typeof reviewApiSchema>;
+
 export const reviewSchema = z
   .object({
     rating: z.coerce.number().min(1, "Please select at least 1 star").max(5),
@@ -8,7 +21,7 @@ export const reviewSchema = z
       .trim()
       .max(120, "Title must be at most 120 characters")
       .optional(),
-    body: z.string().trim().min(10, "Review must be at least 10 characters"),
+    comment: z.string().trim().min(10, "Review must be at least 10 characters"),
   })
   .transform((value) => ({
     ...value,
@@ -16,7 +29,7 @@ export const reviewSchema = z
       value.title && value.title.trim().length > 0
         ? value.title.trim()
         : undefined,
-    body: value.body.trim(),
+    comment: value.comment.trim(),
   }));
 
 export type ReviewFormValues = z.input<typeof reviewSchema>;

@@ -83,7 +83,7 @@ export default function AccountLayout({
                     <Link
                       key={it.href}
                       href={it.href}
-                      className={`block w-full border  px-3 py-2 rounded-md transition-colors ${
+                      className={`block w-full border  px-3 py-2 rounded transition-colors ${
                         active
                           ? "bg-primary text-white border-primary  "
                           : "border-tertiary"

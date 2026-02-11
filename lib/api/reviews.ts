@@ -64,7 +64,7 @@ type ReviewEligibilityData = {
 
 export type CreateReviewPayload = {
   rating: number;
-  body: string;
+  comment: string;
   title?: string;
 };
 

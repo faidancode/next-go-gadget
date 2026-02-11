@@ -10,7 +10,7 @@ export type WishlistItem = {
   productId: string;
   createdAt: string;
   updatedAt: string;
-  product?: Product | null;
+  product?: Product;
 };
 
 export type Wishlist = {
@@ -68,22 +68,20 @@ export async function checkWishlistStatus(
   return normalizeWishlistCheck(payload);
 }
 
-async function createWishlist(payload: {
-  userId: string;
-  items: WishlistItemInput[];
-}) {
-  const response = await apiRequest<unknown>(WISHLIST_ENDPOINT, payload, {
-    method: "POST",
-  });
+async function createWishlist(payload: { productId: string }) {
+  const response = await apiRequest<unknown>(
+    `${WISHLIST_ENDPOINT}/items/${payload.productId}`,
+    payload,
+    {
+      method: "POST",
+    },
+  );
   return unwrapSingle<Wishlist>(response);
 }
 
-async function updateWishlist(
-  wishlistId: string,
-  payload: { items: WishlistItemInput[] },
-) {
+async function updateWishlist(payload: { productId: string }) {
   const response = await apiRequest<unknown>(
-    `${WISHLIST_ENDPOINT}/${wishlistId}`,
+    `${WISHLIST_ENDPOINT}/items/${payload.productId}`,
     payload,
     {
       method: "PATCH",
@@ -112,7 +110,7 @@ export async function getWishlistByUser(options?: {
   const search = query ? `${query}` : "";
   try {
     const payload = await apiRequest<unknown>(
-      `${WISHLIST_ENDPOINT}/detail?${search}`,
+      `${WISHLIST_ENDPOINT}/items?${search}`,
     );
     return unwrapSingle<Wishlist>(payload);
   } catch (error) {
@@ -124,47 +122,20 @@ export async function getWishlistByUser(options?: {
 }
 
 export async function addProductToWishlist(
-  userId: string,
   productId: string,
-  options?: { wishlist?: Wishlist | null },
 ): Promise<Wishlist | null> {
-  if (!userId || !productId) {
+  if (!productId) {
     throw new Error("userId and productId are required");
   }
-  const existing = options?.wishlist ?? (await getWishlistByUser());
-  const nextProductIds = extractProductIds(existing);
-  if (!nextProductIds.includes(productId)) {
-    nextProductIds.push(productId);
-  }
-  const items = convertToInputs(nextProductIds);
 
-  if (!existing) {
-    return createWishlist({ userId, items });
-  }
-  return updateWishlist(existing.id, { items });
+  return createWishlist({ productId });
 }
 
 export async function removeProductFromWishlist(
-  userId: string,
   productId: string,
-  options?: { wishlist?: Wishlist | null; wishlistItemId?: string | null },
 ): Promise<Wishlist | null> {
-  if (!userId || !productId) {
-    throw new Error("userId and productId are required");
-  }
-  const existing = options?.wishlist ?? (await getWishlistByUser());
-  const wishlistItemId =
-    options?.wishlistItemId ??
-    existing?.items?.find((item) => item.productId === productId)?.id ??
-    (await checkWishlistStatus(productId)).wishlistItemId ??
-    null;
-
-  if (!wishlistItemId) {
-    return existing ?? null;
-  }
-
   await apiRequest<unknown>(
-    `${WISHLIST_ENDPOINT}/items/${wishlistItemId}`,
+    `${WISHLIST_ENDPOINT}/items/${productId}`,
     undefined,
     {
       method: "DELETE",

@@ -7,12 +7,14 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { formatIDR } from "@/lib/utils";
 import { DefaultImage } from "./default-image";
+import { ReactNode } from "react";
 
 interface ProductCardProps {
   product: Product;
+  actions?: ReactNode;
 }
 
-export function ProductCard({ product }: ProductCardProps) {
+export function ProductCard({ product, actions }: ProductCardProps) {
   const hasDiscount = !!product.discountPriceCents;
 
   return (
@@ -47,7 +49,7 @@ export function ProductCard({ product }: ProductCardProps) {
 
         <p className="text-muted-foreground text-sm">{product.categoryName}</p>
 
-        <div className="mt-auto flex flex-col">
+        <div className="mt-auto flex flex-col my-2 gap-1">
           {hasDiscount ? (
             <>
               <span className="text-xs text-muted-foreground line-through">
@@ -63,11 +65,9 @@ export function ProductCard({ product }: ProductCardProps) {
             </span>
           )}
         </div>
-
-        <Button size="sm" className="mt-4 w-full gap-2 rounded-lg py-1 text-xs">
-          <ShoppingCart className="h-3 w-3" />
-          Add to Cart
-        </Button>
+        {actions ? (
+          <div className="flex flex-col gap-2 border-t pt-2">{actions}</div>
+        ) : null}
       </div>
     </div>
   );

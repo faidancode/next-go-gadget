@@ -48,136 +48,34 @@ export function useWishlistCheck(productId?: string, userId?: string) {
 // 🔄 TOGGLE WISHLIST (Add/Remove in one hook)
 // ==========================================
 export function useToggleWishlist(
-  product: Product | null | undefined,
-  userId: string | null | undefined,
-  wishlist?: Wishlist | null | undefined,
+  productId?: string,
+  wishlist?: Wishlist | null,
 ) {
   const queryClient = useQueryClient();
-  const router = useRouter();
 
-  const mutation = useMutation<
-    Wishlist | null,
-    unknown,
-    "add" | "remove",
-    WishlistMutationContext
-  >({
-    mutationFn: async (action: "add" | "remove") => {
-      if (!userId || !product?.id) {
-        throw new Error("User and product are required to update wishlist.");
+  const isWishlisted = Boolean(
+    wishlist?.items?.some((item) => item.product?.id === productId),
+  );
+
+  const mutation = useMutation({
+    mutationFn: async () => {
+      if (!productId) return null;
+
+      if (isWishlisted) {
+        return removeProductFromWishlist(productId);
       }
 
-      if (action === "add") {
-        return addProductToWishlist(userId, product.id, {
-          wishlist: wishlist ?? null,
-        });
-      }
-
-      // For remove, get wishlistItemId from cache or API
-      const checkData = queryClient.getQueryData<WishlistCheckResult>([
-        "wishlist-check",
-        product.id,
-        userId,
-      ]);
-
-      return removeProductFromWishlist(userId, product.id, {
-        wishlist: wishlist ?? null,
-        wishlistItemId: checkData?.wishlistItemId ?? null,
-      });
+      return addProductToWishlist(productId);
     },
-
-    onMutate: async (action) => {
-      if (!userId || !product?.id) return {};
-
-      // Cancel outgoing queries
-      await queryClient.cancelQueries({ queryKey: ["wishlist", userId] });
-      await queryClient.cancelQueries({
-        queryKey: ["wishlist-check", product.id, userId],
-      });
-
-      // Snapshot previous values
-      const prevWishlist = queryClient.getQueryData<Wishlist>([
-        "wishlist",
-        userId,
-      ]);
-      const prevCheck = queryClient.getQueryData<WishlistCheckResult>([
-        "wishlist-check",
-        product.id,
-        userId,
-      ]);
-
-      // Optimistic update - wishlist check
-      queryClient.setQueryData<WishlistCheckResult>(
-        ["wishlist-check", product.id, userId],
-        {
-          isWishlisted: action === "add",
-          wishlistItemId:
-            action === "add" ? (prevCheck?.wishlistItemId ?? null) : null,
-        },
-      );
-
-      return { prevWishlist, prevCheck };
-    },
-
-    onError: (error, _action, context) => {
-      // Rollback on error
-      if (userId && product?.id) {
-        if (context?.prevWishlist !== undefined) {
-          queryClient.setQueryData(["wishlist", userId], context.prevWishlist);
-        }
-        if (context?.prevCheck !== undefined) {
-          queryClient.setQueryData(
-            ["wishlist-check", product.id, userId],
-            context.prevCheck,
-          );
-        }
-      }
-
-      const message =
-        error instanceof Error ? error.message : "Failed to update wishlist.";
-      toast.error(message);
-    },
-
-    onSuccess: (result, action) => {
-      if (!userId || !product?.id) return;
-
-      // Update wishlist cache
-      queryClient.setQueryData(["wishlist", userId], result);
-
-      // Update check cache with accurate data from result
-      const updatedItem =
-        result?.items?.find((item) => item.productId === product.id) ?? null;
-      queryClient.setQueryData<WishlistCheckResult>(
-        ["wishlist-check", product.id, userId],
-        {
-          isWishlisted: action === "add",
-          wishlistItemId: action === "add" ? (updatedItem?.id ?? null) : null,
-        },
-      );
-
-      // Invalidate related queries
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["wishlist"] });
-      queryClient.invalidateQueries({ queryKey: ["product-detail"] });
-
-      toast.success(
-        action === "add"
-          ? "Product added to wishlist."
-          : "Product removed from wishlist.",
-      );
     },
   });
 
-  const addToWishlist = (type: "add" | "remove") => {
-    if (!userId) {
-      router.replace(`/login?next=/products/${product?.slug}`);
-      return;
-    }
-
-    mutation.mutate(type);
-  };
-
   return {
-    ...mutation,
-    addToWishlist,
+    toggleWishlist: mutation.mutate,
+    isWishlisted,
+    isPending: mutation.isPending,
   };
 }
 
@@ -197,9 +95,7 @@ export function useAddToWishlist(userId?: string, wishlist?: Wishlist | null) {
       if (!userId || !productId) {
         throw new Error("userId and productId are required");
       }
-      return addProductToWishlist(userId, productId, {
-        wishlist: wishlist ?? null,
-      });
+      return addProductToWishlist(productId);
     },
 
     onMutate: async (productId) => {
@@ -277,17 +173,14 @@ export function useRemoveFromWishlist(
   return useMutation<
     Wishlist | null,
     unknown,
-    { productId: string; wishlistItemId?: string | null },
+    { productId: string },
     WishlistMutationContext
   >({
-    mutationFn: async ({ productId, wishlistItemId }) => {
+    mutationFn: async ({ productId }) => {
       if (!userId || !productId) {
         throw new Error("userId and productId are required");
       }
-      return removeProductFromWishlist(userId, productId, {
-        wishlist: wishlist ?? null,
-        wishlistItemId: wishlistItemId ?? null,
-      });
+      return removeProductFromWishlist(productId);
     },
 
     onMutate: async ({ productId }) => {

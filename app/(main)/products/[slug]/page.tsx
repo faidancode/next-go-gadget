@@ -23,8 +23,7 @@ import {
 } from "@/lib/hooks/use-review";
 import {
   useToggleWishlist,
-  useWishlist,
-  useWishlistCheck,
+  useWishlist
 } from "@/lib/hooks/use-wishlist";
 import { formatIDR } from "@/lib/utils";
 import {
@@ -34,7 +33,6 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Heart, InfoIcon, ShoppingBag } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -55,7 +53,7 @@ export default function ProductDetailPage() {
     defaultValues: {
       rating: 5,
       title: "",
-      body: "",
+      comment: "",
     },
   });
 
@@ -68,29 +66,12 @@ export default function ProductDetailPage() {
   const { mutate: addToCart, isPending: isPendingAddToCart } =
     useAddToCart(product);
   const { data: wishlist } = useWishlist(userId);
-  const { data: wishlistCheck } = useWishlistCheck(product?.id, userId);
-  const { addToWishlist, isPending: isPendingAddToWishlist } =
-    useToggleWishlist(product, userId, wishlist);
 
-  const isWishlisted = wishlistCheck?.isWishlisted ?? false;
-
-  const isProductWishlisted = useMemo(() => {
-    if (!product?.id) return false;
-    if (wishlistCheck && typeof wishlistCheck.isWishlisted === "boolean") {
-      return wishlistCheck.isWishlisted;
-    }
-    if (typeof product.isWishlisted === "boolean") {
-      return product.isWishlisted;
-    }
-    return Boolean(
-      wishlist?.items?.some((item) => item.productId === product.id),
-    );
-  }, [
-    product?.id,
-    product?.isWishlisted,
-    wishlist?.items,
-    wishlistCheck?.isWishlisted,
-  ]);
+  const {
+    toggleWishlist,
+    isWishlisted,
+    isPending: isPendingAddToWishlist,
+  } = useToggleWishlist(product?.id, wishlist);
 
   const {
     data: reviewEligibility,
@@ -226,16 +207,16 @@ export default function ProductDetailPage() {
               <Button
                 variant="secondary"
                 type="button"
-                onClick={() => addToWishlist(isWishlisted ? "remove" : "add")}
+                onClick={() => toggleWishlist()}
                 disabled={isPendingAddToWishlist}
-                className={`font-semibold disabled:cursor-not-allowed disabled:opacity-60`}
+                className="font-semibold disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <Heart
-                  fill={isProductWishlisted ? "currentColor" : "none"}
+                  fill={isWishlisted ? "currentColor" : "none"}
                   strokeWidth={1.5}
-                  className={isProductWishlisted ? "text-secondary" : ""}
+                  className={isWishlisted ? "text-red-500" : ""}
                 />
-                {isProductWishlisted ? "Wishlisted" : "Wishlist"}
+                {isWishlisted ? "Wishlisted" : "Wishlist"}
               </Button>
 
               <Button
@@ -414,14 +395,14 @@ export default function ProductDetailPage() {
                               Review
                             </label>
                             <textarea
-                              {...register("body")}
+                              {...register("comment")}
                               className="w-full rounded-md border border-border bg-background/40 p-3 text-sm text-gray-200 outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30"
                               rows={4}
                               placeholder="Share your experience after reading this product..."
                             />
-                            {errors.body?.message && (
+                            {errors.comment?.message && (
                               <p className="text-xs text-destructive">
-                                {errors.body.message}
+                                {errors.comment.message}
                               </p>
                             )}
                           </div>

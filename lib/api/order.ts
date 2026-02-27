@@ -87,7 +87,7 @@ export async function checkoutOrder(
 
   const headers =
     options?.idempotencyKey && options.idempotencyKey.length > 0
-      ? { "idempotency-key": options.idempotencyKey }
+      ? { "Idempotency-Key": options.idempotencyKey }
       : undefined;
 
   const payload = await apiRequest<unknown>(
@@ -121,9 +121,7 @@ export async function listOrdersByUser(
   });
   const search = query ? `?${query}` : "";
 
-  const payload = await apiRequest<unknown>(
-    `${ORDERS_ENDPOINT}${search}`,
-  );
+  const payload = await apiRequest<unknown>(`${ORDERS_ENDPOINT}${search}`);
   return normalizeOrdersList(toListResult<Order>(payload));
 }
 

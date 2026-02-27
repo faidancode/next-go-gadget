@@ -67,7 +67,7 @@ export function useRegister() {
 export function useConfirmEmail() {
   return useMutation({
     mutationFn: async (token: string) => {
-      return apiRequest(`/auth/confirm-email?token=${token}`, {
+      return apiRequest(`/auth/email-confirmation/verify?token=${token}`, {
         method: "GET",
       });
     },
@@ -77,7 +77,7 @@ export function useConfirmEmail() {
 export function useResendEmailConfirmation() {
   return useMutation({
     mutationFn: (email: string) =>
-      apiRequest("/auth/request-email-confirmation", { email }),
+      apiRequest("/auth/email-confirmation/request", { email }),
     onSuccess: () => {
       toast.success(
         "If the email is registered, a confirmation message has been sent.",
@@ -160,7 +160,7 @@ type ResestPasswordResponseData = {
 
 async function requestReset(payload: RequestPasswordResetInput) {
   return apiRequest<ResestPasswordResponseData>(
-    "/auth/request-password-reset",
+    "/auth/password-reset/request",
     {
       email: payload.email,
     },
@@ -182,7 +182,7 @@ async function resetPassword(payload: ResetPasswordApiPayload) {
   return apiRequest<{
     success: boolean;
     message: string;
-  }>("/auth/reset-password", {
+  }>("/auth/password-reset/confirm", {
     token: payload.token,
     newPassword: payload.password, // Mapping ke key yang diharapkan API
   });

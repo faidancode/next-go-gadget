@@ -1,6 +1,7 @@
 "use client";
 
 import { DefaultImage } from "@/components/shared/default-image";
+import SmallLogo from "@/components/shared/small-logo";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -169,11 +170,7 @@ export default function OrderDetailPage() {
                               className="object-cover rounded"
                             />
                           ) : (
-                            <DefaultImage
-                              className="w-16 rounded"
-                              logoSize={28}
-                              logoOnly={true}
-                            />
+                            <SmallLogo/>
                           )}
                         </div>
                       </Link>

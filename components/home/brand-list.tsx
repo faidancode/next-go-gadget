@@ -14,66 +14,66 @@ export function Brands() {
   const displayed = brands.slice(0, 6);
 
   return (
-    <section className="w-full py-8">
+    <section className="w-full py-12 md:py-16 bg-slate-50/50 -mx-4 px-4 sm:-mx-8 sm:px-8 rounded-[3rem]">
       {/* Header Section */}
-      <div className="flex w-full items-end justify-between mb-8">
-        <div className="space-y-1">
-          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
-            Explore <span className="text-primary">Brands</span>
+      <div className="flex w-full items-end justify-between mb-10">
+        <div className="space-y-2">
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900">
+            Trusted <span className="text-primary italic">Brands</span>
           </h2>
-          <p className="text-sm text-muted-foreground">
-            Find the best gadgets by your favorite brand.
+          <p className="text-slate-500 font-medium max-w-md">
+            Collaborating with world-class manufacturers to bring you
+            excellence.
           </p>
         </div>
-        <LinkButton text="Explore All" href="/brands" />
+        <LinkButton text="View All Brands" href="/brands" />
       </div>
 
       {/* Grid Section */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {isLoading ? (
-          Array.from({ length: 6 }).map((_, idx) => (
+          Array.from({ length: 8 }).map((_, idx) => (
             <div
               key={idx}
-              className="h-20 rounded-2xl bg-muted/50 animate-pulse border border-border/50"
+              className="h-28 rounded-3xl bg-white animate-pulse border border-slate-100 shadow-sm"
             />
           ))
         ) : displayed.length > 0 ? (
-          displayed.map((cat) => (
+          displayed.map((brand) => (
             <Link
-              key={cat.id ?? cat.slug}
-              href={`/shop/categories/${cat.slug}`}
-              className="group relative flex items-center gap-4 overflow-hidden rounded-2xl border border-border bg-card p-4 transition-all duration-300 hover:border-primary hover:shadow-lg hover:shadow-primary/5 active:scale-95"
+              key={brand.id ?? brand.slug}
+              href={`/shop/brands/${brand.slug}`}
+              className="group relative flex flex-col items-center justify-center gap-3 overflow-hidden rounded-[2rem] border border-transparent bg-white p-8 transition-all duration-500 hover:border-emerald-100 hover:shadow-xl hover:shadow-emerald-500/10 active:scale-95 shadow-sm"
             >
-              {/* Container Logo / Icon (Kiri) */}
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-muted transition-colors group-hover:bg-primary/10">
-                {cat.imageUrl ? (
+              {/* Logo Container */}
+              <div className="relative h-12 w-full flex items-center justify-center filter grayscale group-hover:grayscale-0 transition-all duration-500 group-hover:scale-110">
+                {brand.imageUrl ? (
                   <Image
-                    src={cat.imageUrl}
-                    width={32}
-                    height={32}
-                    alt={cat.name}
-                    className="h-8 w-8 object-contain transition-transform duration-300 group-hover:scale-110"
+                    src={brand.imageUrl}
+                    fill
+                    alt={brand.name}
+                    className="object-contain"
                   />
                 ) : (
-                  <LayoutGrid className="h-6 w-6 text-muted-foreground group-hover:text-primary" />
+                  <span className="text-xl font-black text-slate-200 group-hover:text-primary transition-colors">
+                    {brand.name}
+                  </span>
                 )}
               </div>
 
-              {/* Container Teks (Kanan) */}
-              <div className="flex flex-col min-w-0">
-                <span className="truncate text-sm font-bold text-foreground transition-colors group-hover:text-primary">
-                  {cat.name}
+              {/* Hover Label */}
+              <div className="absolute inset-x-0 bottom-0 py-2 bg-primary translate-y-full group-hover:translate-y-0 transition-transform duration-300 flex items-center justify-center gap-1">
+                <span className="text-[10px] font-bold text-white uppercase tracking-tighter">
+                  Explore {brand.name}
                 </span>
-                <p className="text-xs text-muted-foreground">
-                  Browse collection
-                </p>
+                <ChevronRight size={10} className="text-white" />
               </div>
             </Link>
           ))
         ) : (
-          <div className="col-span-full flex flex-col items-center justify-center rounded-2xl border border-dashed border-border p-12 text-center">
-            <p className="text-sm text-muted-foreground">
-              There are no brands to display yet.
+          <div className="col-span-full py-16 flex flex-col items-center justify-center">
+            <p className="text-slate-400 font-medium italic">
+              No brand partners found.
             </p>
           </div>
         )}
@@ -81,11 +81,16 @@ export function Brands() {
 
       {/* Error State */}
       {isError && (
-        <div className="mt-6 flex items-center justify-center gap-2 rounded-lg bg-destructive/10 p-3 text-xs text-destructive">
-          <span>Cannot load brand.</span>
-          <button className="font-bold underline" onClick={() => refetch()}>
-            Try again
-          </button>
+        <div className="mt-8 flex items-center justify-center gap-3 text-red-500">
+          <p className="text-sm font-semibold">Failed to load brand data.</p>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => refetch()}
+            className="hover:bg-red-50"
+          >
+            Retry
+          </Button>
         </div>
       )}
     </section>

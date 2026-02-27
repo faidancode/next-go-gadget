@@ -1,6 +1,15 @@
 "use client";
 
-import { Trash } from "lucide-react";
+import {
+  Lock,
+  Minus,
+  Plus,
+  Shield,
+  ShoppingBag,
+  Trash,
+  Trash2,
+  UserIcon,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -33,30 +42,26 @@ function formatIDR(value: number) {
 }
 
 export default function CartPage() {
-  const [isAuthHydrated, setIsAuthHydrated] = useState(false);
   const user = useAuthStore((s) => s.user);
-  const isAuthenticated = Boolean(user);
-
   const items = useCartStore((s) => s.items);
-  const incLocal = useCartStore((s) => s.inc);
-  const decLocal = useCartStore((s) => s.dec);
-  const removeLocal = useCartStore((s) => s.remove);
-  const replaceAll = useCartStore((s) => s.replaceAll);
-  console.log({ items });
+  const {
+    inc: incLocal,
+    dec: decLocal,
+    remove: removeLocal,
+    replaceAll,
+  } = useCartStore();
 
-  const [qtyInputs, setQtyInputs] = useState<Record<string, string>>({});
-
-  /* ============================
-   Cart hooks (API)
-============================ */
   const incrementItem = useIncrementCartItem();
   const decrementItem = useDecrementCartItem();
   const removeItem = useRemoveCartItem();
   const updateQty = useUpdateCartQty();
 
+  const [qtyInputs, setQtyInputs] = useState<Record<string, string>>({});
+  const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0);
+
   /* ============================
-   Qty input helpers
-============================ */
+     Qty input helpers
+  ============================ */
   const handleQtyInputChange = (itemId: string, value: string) => {
     const sanitized = value.replace(/[^0-9]/g, "");
     setQtyInputs((prev) => ({ ...prev, [itemId]: sanitized }));
@@ -70,9 +75,6 @@ export default function CartPage() {
     });
   };
 
-  /* ============================
-   Commit qty input
-============================ */
   const commitQtyInput = async (itemId: string, currentQty: number) => {
     const rawValue = qtyInputs[itemId];
     if (!rawValue) return clearQtyInput(itemId);
@@ -83,253 +85,221 @@ export default function CartPage() {
     const nextQty = Math.max(1, Math.trunc(parsed));
     if (nextQty === currentQty) return clearQtyInput(itemId);
 
-    if (isAuthenticated) {
+    if (user) {
       updateQty.mutate({ productId: itemId, qty: nextQty });
     } else {
-      // Guest → local only
       replaceAll(
         items.map((it) => (it.id === itemId ? { ...it, qty: nextQty } : it)),
       );
     }
-
     clearQtyInput(itemId);
   };
 
   /* ============================
-   ➖ DECREMENT
-============================ */
+     HANDLERS (Logic)
+  ============================ */
   const handleDecrement = (itemId: string) => {
-    if (isAuthenticated) {
-      decrementItem.mutate(itemId);
+    const item = items.find((i) => i.id === itemId);
+    if (item && item.qty > 1) {
+      if (user) decrementItem.mutate(itemId);
+      else decLocal(itemId);
     } else {
-      decLocal(itemId);
+      handleRemove(itemId);
     }
   };
 
-  /* ============================
-   ➕ INCREMENT
-============================ */
   const handleIncrement = (itemId: string) => {
-    if (isAuthenticated) {
-      incrementItem.mutate(itemId);
-    } else {
-      incLocal(itemId);
-    }
+    if (user) incrementItem.mutate(itemId);
+    else incLocal(itemId);
   };
 
-  /* ============================
-   🗑️ REMOVE
-============================ */
   const handleRemove = (itemId: string) => {
-    if (isAuthenticated) {
-      removeItem.mutate(itemId);
-    } else {
-      removeLocal(itemId);
-    }
+    if (user) removeItem.mutate(itemId);
+    else removeLocal(itemId);
   };
-
-  /* ============================
-   Subtotal
-============================ */
-  const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0);
-
-  // if (!isAuthHydrated) {
-  //   return null;
-  // }
 
   if (!user) {
     return (
-      <div className="w-full text-center py-10">
-        <p className="mb-4">Please login.</p>
-        <Link
-          href="/login"
-          className="inline-block rounded-full bg-secondary px-5 py-2 font-semibold text-white"
-        >
-          Login
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
+        <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-6 text-slate-400">
+          <UserIcon size={32} />
+        </div>
+        <h2 className="text-2xl font-bold text-slate-900 mb-2">Please login</h2>
+        <p className="text-slate-500 mb-8 max-w-xs">
+          You need to be logged in to manage your cart and proceed to checkout.
+        </p>
+        <Link href="/login">
+          <Button className="rounded-full px-10 py-6 bg-primary hover:opacity-90 shadow-lg shadow-emerald-100 transition-all">
+            Login to your Account
+          </Button>
         </Link>
       </div>
     );
   }
 
   return (
-    <div className="w-full p-4">
-      {items.length >= 1 && <Title>Cart</Title>}
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      {items.length >= 1 && (
+        <div className="flex items-center gap-3 mb-8">
+          <h1 className="text-3xl font-bold tracking-tight">Your Cart</h1>
+          <span className="bg-slate-100 text-slate-600 text-xs font-bold px-2.5 py-1 rounded-full">
+            {items.length} Items
+          </span>
+        </div>
+      )}
 
-      {/* Cart Items */}
-      <div className="space-y-3 border rounded-lg p-4">
-        {items.length === 0 ? (
-          <EmptyState />
-        ) : (
-          items.map((it: CartItem, index) => (
-            <div key={it.id} className="rounded-lg bg-tertiary ">
-              {/* Mobile/Tablet (sm & md): two sides */}
-              <div className="flex flex-row gap-3 items-start lg:hidden">
-                {/* Left: Image */}
-                <Link href={`products/${it.slug}`}>
-                  <div className="w-auto shrink-0 hover:cursor-pointer">
-                    {it.imageUrl ? (
-                      <Image
-                        src={it.imageUrl}
-                        alt={it.name}
-                        width="120"
-                        height="150"
-                        className="object-cover rounded"
-                      />
-                    ) : (
-                      <CoverPlaceholder
-                        title={it.name}
-                        className="w-24 h-32"
-                        fontSize="text-sm"
-                      />
-                    )}
-                  </div>
-                </Link>
-                {/* Right: Content */}
-                <div className="flex-1 w-full">
-                  <div className="font-semibold">{it.name}</div>
-                  <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 items-center">
-                    <div>
-                      <div className="font-semibold hidden lg:block">Price</div>
-                      <div className="text-sm mt-1">{formatIDR(it.price)}</div>
+      {items.length === 0 ? (
+        <div className="min-h-[50vh] flex flex-col items-center justify-center bg-white rounded-3xl border border-dashed border-slate-200 p-12">
+          <ShoppingBag size={48} className="text-slate-200 mb-4" />
+          <p className="text-slate-500 font-medium mb-6">
+            Your shopping cart is empty
+          </p>
+          <Link href="/shop">
+            <Button
+              variant="outline"
+              className="rounded-full px-8 border-slate-200 hover:bg-slate-50"
+            >
+              Continue Shopping
+            </Button>
+          </Link>
+        </div>
+      ) : (
+        <div className="grid lg:grid-cols-12 gap-8 items-start">
+          {/* Left Side: Items List */}
+          <div className="lg:col-span-8 space-y-4">
+            {items.map((it, index) => (
+              <div
+                key={it.id}
+                className="group bg-white rounded-3xl p-4 sm:p-6 border border-slate-100 shadow-sm hover:shadow-md transition-shadow"
+              >
+                <div className="flex gap-4 sm:gap-6">
+                  {/* Image */}
+                  <Link href={`/products/${it.slug}`} className="shrink-0">
+                    <div className="w-24 h-24 sm:w-32 sm:h-32 bg-slate-50 rounded-2xl overflow-hidden relative border border-slate-50">
+                      {it.imageUrl ? (
+                        <Image
+                          src={it.imageUrl}
+                          alt={it.name}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-[10px] text-slate-400 p-2 text-center uppercase font-bold">
+                          {it.name}
+                        </div>
+                      )}
                     </div>
-                    <div className="flex flex-col items-end">
-                      <div className="font-semibold hidden lg:block">
-                        Quantity
-                      </div>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Button
-                          variant="outline"
-                          onClick={() => handleDecrement(it.id)}
-                          className="rounded px-2 py-1"
+                  </Link>
+
+                  {/* Info */}
+                  <div className="flex-1 flex flex-col justify-between">
+                    <div className="flex justify-between items-start gap-2">
+                      <div>
+                        <Link
+                          href={`/products/${it.slug}`}
+                          className="font-bold text-slate-900 hover:text-primary transition-colors sm:text-lg"
                         >
-                          -
+                          {it.name}
+                        </Link>
+                        <p className="text-primary font-bold mt-1">
+                          {formatIDR(it.price)}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => handleRemove(it.id)}
+                        className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+
+                    <div className="flex items-end justify-between mt-4">
+                      {/* Subtotal for this item (Desktop only) */}
+                      <div className="hidden sm:block">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">
+                          Subtotal
+                        </p>
+                        <p className="font-semibold text-slate-700">
+                          {formatIDR(it.price * it.qty)}
+                        </p>
+                      </div>
+
+                      {/* Qty Controls */}
+                      <div className="flex items-center bg-slate-50 rounded-2xl p-1 border border-slate-100">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDecrement(it.id)}
+                          className="h-8 w-8 rounded-xl hover:bg-white hover:shadow-sm"
+                        >
+                          {it.qty === 1 ? (
+                            <Trash size={14} className="text-red-500" />
+                          ) : (
+                            <Minus size={14} />
+                          )}
                         </Button>
                         <input
                           type="number"
-                          min={1}
+                          className="w-10 bg-transparent text-center text-sm font-bold focus:outline-none"
                           value={qtyInputs[it.id] ?? it.qty.toString()}
-                          onChange={(event) =>
-                            handleQtyInputChange(it.id, event.target.value)
+                          onChange={(e) =>
+                            handleQtyInputChange(it.id, e.target.value)
                           }
                           onBlur={() => commitQtyInput(it.id, it.qty)}
-                          onKeyDown={(event) => {
-                            if (event.key === "Enter") {
-                              event.currentTarget.blur();
-                            }
-                          }}
-                          className="w-16 rounded px-2 py-1 text-center text-sm"
-                          aria-label={`Quantity for ${it.name}`}
                         />
-                        <Button
-                          variant="outline"
+                        <button
                           onClick={() => handleIncrement(it.id)}
-                          className="rounded px-2 py-1"
+                          className="h-8 w-8 flex items-center justify-center rounded-xl hover:bg-white hover:shadow-sm transition-all"
                         >
-                          +
-                        </Button>
+                          <Plus size={14} />
+                        </button>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
+            ))}
+          </div>
 
-              {/* Desktop (lg+): original grid */}
-              <div className="hidden lg:grid grid-cols-12 items-center gap-3">
-                <Link href={`products/${it.slug}`}>
-                  <div className="col-span-2 hover:cursor-pointer">
-                    {it.imageUrl ? (
-                      <Image
-                        src={it.imageUrl}
-                        alt={it.name}
-                        width="120"
-                        height="150"
-                        className="object-cover rounded"
-                      />
-                    ) : (
-                      <CoverPlaceholder
-                        title={it.name}
-                        className="w-24 h-32"
-                        fontSize="text-sm"
-                      />
-                    )}
-                  </div>
-                </Link>
-                <div className="col-span-4">
-                  <Link href={`/products/${it.slug}`}>
-                    <div className="font-semibold hover:cursor-pointer hover:text-secondary">
-                      {it.name}
-                    </div>
-                  </Link>
+          {/* Right Side: Summary */}
+          <div className="lg:col-span-4 sticky top-24">
+            <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm">
+              <h2 className="text-lg font-bold mb-6">Order Summary</h2>
+
+              <div className="space-y-4 mb-6">
+                <div className="flex justify-between text-slate-500 text-sm font-medium">
+                  <span>Subtotal ({items.length} items)</span>
+                  <span>{formatIDR(subtotal)}</span>
                 </div>
-                <div className="col-span-2 text-center">
-                  <div className="font-semibold">Price</div>
-                  <div className="text-sm mt-1">{formatIDR(it.price)}</div>
+                <div className="flex justify-between text-slate-500 text-sm font-medium">
+                  <span>Shipping</span>
+                  <span className="text-emerald-600 font-bold">
+                    Calculated at next step
+                  </span>
                 </div>
-                <div className="col-span-2">
-                  <div className="font-semibold text-center">Quantity</div>
-                  <div className="flex justify-center items-center gap-2 mt-1">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => handleDecrement(it.id)}
-                      className="rounded border"
-                    >
-                      {it.qty === 1 ? (
-                        <Trash size={14} className="text-red-800" />
-                      ) : (
-                        "-"
-                      )}
-                    </Button>
-                    <input
-                      type="number"
-                      min={1}
-                      value={qtyInputs[it.id] ?? it.qty.toString()}
-                      onChange={(event) =>
-                        handleQtyInputChange(it.id, event.target.value)
-                      }
-                      onBlur={() => commitQtyInput(it.id, it.qty)}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter") {
-                          event.currentTarget.blur();
-                        }
-                      }}
-                      className="w-16 bg-gray-100 rounded px-2 py-1 text-center text-sm"
-                      aria-label={`Quantity for ${it.name}`}
-                    />
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => handleIncrement(it.id)}
-                      className="rounded border"
-                    >
-                      +
-                    </Button>
-                  </div>
-                </div>
-                <div className="col-span-1 font-semibold text-center">
-                  <div className="font-semibold">Subtotal</div>
-                  {formatIDR(it.price * it.qty)}
+                <div className="h-px bg-slate-100 my-2" />
+                <div className="flex justify-between items-end">
+                  <span className="text-slate-900 font-bold">Total Amount</span>
+                  <span className="text-2xl font-black text-slate-900 tracking-tight">
+                    {formatIDR(subtotal)}
+                  </span>
                 </div>
               </div>
-              {index !== items.length - 1 && <Separator className="mt-2" />}
-            </div>
-          ))
-        )}
-      </div>
 
-      {items.length >= 1 ? (
-        <div className="mt-6 lg:flex lg:justify-end">
-          <div className="bg-tertiary p-4 space-y-3 lg:w-1/3  border rounded-lg">
-            <div className="flex justify-between text-sm">
-              <span>Subtotal</span>
-              <span>{formatIDR(subtotal)}</span>
+              <Link href="/checkout">
+                <Button className="w-full py-7 rounded-2xl bg-primary text-white font-bold text-lg shadow-lg shadow-emerald-100 hover:opacity-90 active:scale-[0.98] transition-all">
+                  Proceed to Checkout
+                </Button>
+              </Link>
+
+              <div className="mt-6 flex items-center justify-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                <Shield size={12} />
+                Secure Checkout
+              </div>
             </div>
-            <Link href="/checkout" className="block">
-              <Button className="w-full">Checkout</Button>
-            </Link>
           </div>
         </div>
-      ) : null}
+      )}
     </div>
   );
 }

@@ -184,7 +184,7 @@ async function resetPassword(payload: ResetPasswordApiPayload) {
     message: string;
   }>("/auth/password-reset/confirm", {
     token: payload.token,
-    newPassword: payload.password, // Mapping ke key yang diharapkan API
+    new_password: payload.password, 
   });
 }
 

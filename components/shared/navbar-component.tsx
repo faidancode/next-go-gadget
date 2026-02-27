@@ -9,19 +9,25 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { apiRequest } from "@/lib/api/fetcher";
-import { Menu, ShoppingBag, User as UserIcon } from "lucide-react";
+import { Menu, ShoppingBag, User as UserIcon, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Logo } from "./logo";
+import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
 
 export function Navbar() {
   const appName = process.env.APP_NAME || "GoGadget";
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
+  const totalItems = useCartStore(selectTotalItems);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const pathname = usePathname();
+
   async function handleLogout() {
     try {
       await apiRequest<{ success: boolean }>(
@@ -30,23 +36,16 @@ export function Navbar() {
         { method: "POST" },
       );
     } catch {
-      // ignore, tetap logout client
+      // ignore
     } finally {
       router.replace("/login");
       logout();
       toast.success("You have been logged out.");
     }
   }
-  const totalItems = useCartStore(selectTotalItems);
 
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const pathname = usePathname();
-
-  // Auto-close drawer when navigating to /account
   useEffect(() => {
-    if (pathname?.startsWith("/account")) {
-      setDrawerOpen(false);
-    }
+    if (pathname?.startsWith("/account")) setDrawerOpen(false);
   }, [pathname]);
 
   const handleCartClick = () => {
@@ -58,146 +57,157 @@ export function Navbar() {
   };
 
   return (
-    <div className="flex items-center justify-between mb-4 border-b border-gray-200 p-4 w-full relative">
-      <button
-        aria-label="Open menu"
-        aria-expanded={drawerOpen}
-        aria-controls="mobile-drawer"
-        onClick={() => setDrawerOpen(true)}
-        className="md:hidden rounded-full p-2 hover:bg-tertiary/60"
-      >
-        <Menu size={20} />
-      </button>
-      <Link href="/" aria-label="go home">
-        <div className="flex items-center gap-2 hover:cursor-pointer">
-          <Image
-            src="/logo.svg"
-            alt={`${appName} Logo`}
-            width={28}
-            height={50}
-          />
-          <h1 className="font-bold text-xl md:text-2xl">{appName}</h1>
-        </div>
-      </Link>
-
-      <div className="hidden md:flex gap-6 lg:gap-8 font-semibold">
-        <Link href="/" className="hover:text-primary">
-          Home
-        </Link>
-        <Link href="/shop" className="hover:text-primary">
-          Shop
-        </Link>
-        <Link href="/categories" className="hover:text-primary">
-          Categories
-        </Link>
-      </div>
-
-      <div className="flex items-center gap-2 sm:gap-4">
-        <button
-          onClick={handleCartClick}
-          className="relative rounded-full border flex items-center bg-tertiary  p-3 hover:cursor-pointer hover:border-primary hover:text-primary"
-        >
-          <ShoppingBag size={16} className="hover:text-primary" />
-          {user && totalItems > 0 && (
-            <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-primary text-white text-[10px] flex items-center justify-center">
-              {totalItems}
-            </span>
-          )}
-        </button>
-        {!user ? (
-          <Link
-            href="/login"
-            className="hidden sm:block rounded-full border hover:border-primary py-2 px-4 md:px-6 font-semibold hover:text-primary"
+    <nav className="sticky top-0 z-40 w-full bg-white/80 backdrop-blur-md border-b border-slate-100 px-6 py-4">
+      <div className="max-w-7xl mx-auto flex items-center justify-between">
+        {/* Left: Mobile Menu & Logo */}
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => setDrawerOpen(true)}
+            className="md:hidden p-2 -ml-2 text-slate-600 hover:bg-slate-50 rounded-full transition-colors"
           >
-            Login
-          </Link>
-        ) : (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button
-                className="hover:cursor-pointer rounded-full border hover:border-primary hover:text-primary  p-3"
-                aria-label="Open account menu"
-              >
-                <UserIcon size={16} />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-40 border  ">
-              <DropdownMenuItem
-                onSelect={() => {
-                  router.push("/account");
-                }}
-                className=" hover:cursor-pointer"
-              >
-                Account
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onSelect={() => {
-                  handleLogout();
-                }}
-                className="hover:cursor-pointer"
-              >
-                Logout
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
-      </div>
+            <Menu size={22} />
+          </button>
 
-      {/* Mobile Drawer */}
-      {drawerOpen && (
-        <div
-          className="fixed inset-0 z-50 md:hidden"
-          role="dialog"
-          aria-modal="true"
-        >
-          <div
-            className="absolute inset-0 bg-black/50"
-            onClick={() => setDrawerOpen(false)}
-          />
-          <div
-            id="mobile-drawer"
-            className="absolute left-0 top-0 h-full w-64 bg-tertiary shadow-xl p-4 transform transition-transform duration-200 ease-out translate-x-0"
-          >
-            <div className="mb-4 border-b border-primary/30 pb-4 flex items-center justify-between">
-              <Logo />
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="bg-[oklch(0.648_0.2_131.684)] p-1.5 rounded-xl shadow-lg shadow-emerald-200 group-hover:scale-110 transition-transform">
+              <Image
+                src="/logo.svg"
+                alt="Logo"
+                width={22}
+                height={22}
+                className="brightness-0 invert"
+              />
             </div>
-            <nav className="space-y-1">
-              <Link
-                href="/"
-                className="block px-3 py-2 rounded hover:bg-primary/30"
-                onClick={() => setDrawerOpen(false)}
+            <span className="font-serif italic text-xl tracking-tighter text-slate-900">
+              {appName}
+            </span>
+          </Link>
+        </div>
+
+        {/* Center: Desktop Nav */}
+        <div className="hidden md:flex items-center gap-8">
+          {["Home", "Shop", "Categories"].map((item) => (
+            <Link
+              key={item}
+              href={item === "Home" ? "/" : `/${item.toLowerCase()}`}
+              className={cn(
+                "text-sm font-medium transition-colors hover:text-[oklch(0.648_0.2_131.684)]",
+                pathname === (item === "Home" ? "/" : `/${item.toLowerCase()}`)
+                  ? "text-[oklch(0.648_0.2_131.684)]"
+                  : "text-slate-500",
+              )}
+            >
+              {item}
+            </Link>
+          ))}
+        </div>
+
+        {/* Right: Actions */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleCartClick}
+            className="relative p-2.5 text-slate-600 hover:bg-slate-50 rounded-full transition-all border border-transparent hover:border-slate-100"
+          >
+            <ShoppingBag size={20} />
+            {user && totalItems > 0 && (
+              <span className="absolute top-1 right-1 min-w-4.5 h-4.5 px-1 rounded-full bg-primary text-white text-[10px] font-bold flex items-center justify-center shadow-sm">
+                {totalItems}
+              </span>
+            )}
+          </button>
+
+          {!user ? (
+            <Link
+              href="/login"
+              className="hidden sm:block px-6 py-2 rounded-full text-sm font-bold bg-primary text-white transition-transform active:scale-95 shadow-md shadow-emerald-100"
+            >
+              Login
+            </Link>
+          ) : (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="p-2.5 text-slate-600 hover:bg-slate-50 rounded-full border border-transparent hover:border-slate-100 transition-all">
+                  <UserIcon size={20} />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                className="w-52 p-2 rounded-2xl border-slate-100 shadow-xl"
               >
-                Home
-              </Link>
-              <Link
-                href="/shop"
-                className="block px-3 py-2 rounded hover:bg-primary/30"
-                onClick={() => setDrawerOpen(false)}
-              >
-                Shop
-              </Link>
-              <Link
-                href="/categories"
-                className="block px-3 py-2 rounded hover:bg-primary/30"
-                onClick={() => setDrawerOpen(false)}
-              >
-                Categories
-              </Link>
-            </nav>
-            {!user && (
-              <div className="mt-4">
+                <DropdownMenuItem
+                  onSelect={() => router.push("/account")}
+                  className="rounded-xl py-3 cursor-pointer focus:bg-emerald-50 focus:text-emerald-700 font-medium"
+                >
+                  Account Settings
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onSelect={handleLogout}
+                  className="rounded-xl py-3 cursor-pointer focus:bg-red-50 focus:text-red-600 font-medium"
+                >
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </div>
+      </div>
+
+      {/* Mobile Drawer with Framer Motion */}
+      <AnimatePresence>
+        {drawerOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setDrawerOpen(false)}
+              className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm md:hidden"
+            />
+            <motion.div
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed left-0 top-0 z-50 h-full w-72 bg-white shadow-2xl p-6 md:hidden flex flex-col"
+            >
+              <div className="flex items-center justify-between mb-10">
+                <span className="font-serif italic text-2xl tracking-tighter text-slate-900">
+                  {appName}
+                </span>
+                <button
+                  onClick={() => setDrawerOpen(false)}
+                  className="p-2 text-slate-400"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              <nav className="flex flex-col gap-2 flex-1">
+                {["Home", "Shop", "Categories"].map((item) => (
+                  <Link
+                    key={item}
+                    href={item === "Home" ? "/" : `/${item.toLowerCase()}`}
+                    onClick={() => setDrawerOpen(false)}
+                    className="px-4 py-4 rounded-2xl text-lg font-medium text-slate-600 hover:bg-emerald-50 hover:text-emerald-700 transition-colors"
+                  >
+                    {item}
+                  </Link>
+                ))}
+              </nav>
+
+              {!user && (
                 <Link
                   href="/login"
                   onClick={() => setDrawerOpen(false)}
-                  className="block text-center rounded-full bg-tertiary border border-primary text-white font-semibold py-2"
+                  className="w-full py-4 rounded-2xl text-center font-bold bg-primary text-white shadow-lg shadow-emerald-100"
                 >
                   Sign In
                 </Link>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
+              )}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </nav>
   );
 }

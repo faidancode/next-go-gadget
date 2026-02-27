@@ -230,7 +230,7 @@ export default function ProductDetailPage() {
             </div>
             <div>
               <h2 className="font-semibold text-lg mb-2">Description</h2>
-              <div className="pt-2 text-sm leading-relaxed text-gray-400">
+              <div className="pt-2 text-sm leading-relaxed text-gray-700">
                 {product.description || "No description available."}
               </div>
             </div>
@@ -305,7 +305,7 @@ export default function ProductDetailPage() {
                       <div>
                         <div className="mb-3 flex items-center justify-between">
                           <div>
-                            <p className="text-xs text-gray-400">
+                            <p className="text-xs text-gray-600">
                               Reviews are available once the purchase is
                               completed (1 review per product).
                             </p>
@@ -322,7 +322,7 @@ export default function ProductDetailPage() {
                           </Button> */}
                         </div>
 
-                        <div className="flex gap-2 items-center rounded-md border border-cyan-300 bg-cyan-200 p-3 text-sm text-cyan-900">
+                        <div className="flex gap-2 items-center rounded-md border border-cyan-100 bg-cyan-50 p-3 text-sm text-cyan-700">
                           <InfoIcon />
                           {reviewEligibilityMessage}
                         </div>

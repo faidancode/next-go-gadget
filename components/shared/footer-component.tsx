@@ -1,63 +1,102 @@
 import Image from "next/image";
 import Link from "next/link";
 
-const menuLinks = [
-  {
-    title: "Home",
-    href: "/",
-  },
-  {
-    title: "Shop",
-    href: "/shop",
-  },
-  {
-    title: "Categories",
-    href: "/categories",
-  },
-];
-
-const appName = process.env.APP_NAME || "GoGadget";
-
 export function Footer() {
+  const appName = process.env.APP_NAME || "GoGadget";
+
+  const menuLinks = [
+    { title: "Home", href: "/" },
+    { title: "Shop", href: "/shop" },
+    { title: "Categories", href: "/categories" },
+    { title: "Terms of Service", href: "/terms" },
+    { title: "Privacy Policy", href: "/privacy" },
+  ];
+
   return (
-    <footer className="bg-gray-50 border-t border-b border-gray-200 pt-12 mt-4 dark:bg-transparent hidden lg:block">
-      <div className="grid px-4 gap-12 lg:grid-cols-2">
-        <div className="flex flex-col gap-2">
-          <Link href="/" aria-label="go home" className="block size-fit">
-            <div className="flex items-center gap-2 hover:cursor-pointer">
-              <Image
-                src="/logo.svg"
-                alt={`${appName} Logo`}
-                width={28}
-                height={50}
-              />
-              <h1 className="font-bold text-xl md:text-2xl">{appName}</h1>
+    <footer className="bg-white border-t border-slate-100 pt-20 mt-20">
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="grid gap-16 lg:grid-cols-3">
+          {/* Brand Section */}
+          <div className="lg:col-span-2 flex flex-col gap-6">
+            <Link href="/" aria-label="go home" className="block w-fit">
+              <div className="flex items-center gap-3">
+                <div
+                  className="bg-primary p-1.5 rounded-xl shadow-sm"
+                >
+                  <Image
+                    src="/logo.svg"
+                    alt={`${appName} Logo`}
+                    width={24}
+                    height={24}
+                    className="brightness-0 invert"
+                  />
+                </div>
+                <h1 className="font-serif italic text-2xl tracking-tighter text-slate-900">
+                  {appName}
+                </h1>
+              </div>
+            </Link>
+            <p className="max-w-md text-sm leading-relaxed text-slate-500 font-medium">
+              Elevating your digital lifestyle. {appName} is a curated space to
+              discover, explore, and collect the latest tech innovations that
+              spark your imagination.
+            </p>
+          </div>
+
+          {/* Navigation Section */}
+          <div className="grid grid-cols-2 gap-8 lg:gap-12">
+            <div className="space-y-5">
+              <span className="block text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">
+                Menu
+              </span>
+              <nav className="flex flex-col gap-3">
+                {menuLinks.slice(0, 3).map((item) => (
+                  <Link
+                    key={item.title}
+                    href={item.href}
+                    className="text-sm text-slate-600 hover:text-[oklch(0.648_0.2_131.684)] transition-colors duration-200"
+                  >
+                    {item.title}
+                  </Link>
+                ))}
+              </nav>
             </div>
-          </Link>
-          <p className="max-w-sm text-sm text-gray-500">
-            {appName} is your curated space to discover, explore, and collect
-            the products that spark your imagination.
-          </p>
+
+            <div className="space-y-5">
+              <span className="block text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">
+                Legal
+              </span>
+              <nav className="flex flex-col gap-3">
+                {menuLinks.slice(3).map((item) => (
+                  <Link
+                    key={item.title}
+                    href={item.href}
+                    className="text-sm text-slate-600 hover:text-[oklch(0.648_0.2_131.684)] transition-colors duration-200"
+                  >
+                    {item.title}
+                  </Link>
+                ))}
+              </nav>
+            </div>
+          </div>
         </div>
 
-        <div className="space-y-3 text-sm">
-          <span className="block font-semiboldtext-lg">Menu</span>
-          {menuLinks.map((item) => (
-            <Link
-              key={item.title}
-              href={item.href}
-              className="text-gray-500 hover:text-primary block duration-150"
-            >
-              {item.title}
-            </Link>
-          ))}
+        {/* Bottom Bar */}
+        <div className="mt-20 border-t border-slate-50 py-8 flex flex-col md:flex-row items-center justify-between gap-6">
+          <p className="text-slate-400 text-[11px] font-mono tracking-wider uppercase">
+            © {new Date().getFullYear()} —{" "}
+            <span className="text-slate-900 font-bold">{appName}</span>{" "}
+            Authorized Retailer
+          </p>
+
+          <div className="flex items-center gap-6">
+            <div className="flex gap-4">
+              {/* Placeholder for Social Icons if needed */}
+              <div className="w-8 h-8 rounded-full bg-slate-50 border border-slate-100 hover:border-emerald-200 transition-colors" />
+              <div className="w-8 h-8 rounded-full bg-slate-50 border border-slate-100 hover:border-emerald-200 transition-colors" />
+            </div>
+          </div>
         </div>
-      </div>
-      <div className="px-4 bg-background mt-12 flex flex-wrap items-end justify-between gap-6 border-t border-gray-200 py-4">
-        <p className="text-muted-foreground order-last block text-center text-sm md:order-first">
-          {new Date().getFullYear()}{" "}
-          <span className="text-primary">GoGadget</span>, All rights reserved
-        </p>
       </div>
     </footer>
   );

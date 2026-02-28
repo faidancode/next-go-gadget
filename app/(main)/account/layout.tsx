@@ -4,9 +4,18 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuthStore } from "@/app/stores/auth";
-import { User, Receipt, MessageSquare, Heart, MapPin } from "lucide-react";
+import {
+  User,
+  Receipt,
+  MessageSquare,
+  Heart,
+  MapPin,
+  ChevronRight,
+  LogOut,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "sonner";
+import { cn } from "@/lib/utils";
 
 export default function AccountLayout({
   children,
@@ -22,93 +31,125 @@ export default function AccountLayout({
   }, []);
 
   const items = [
-    { label: "Account", href: "/account", Icon: User },
-    { label: "Orders", href: "/account/orders", Icon: Receipt },
-    { label: "Reviews", href: "/account/reviews", Icon: MessageSquare },
-    { label: "Wishlist", href: "/account/wishlist", Icon: Heart },
-    { label: "Address", href: "/account/address", Icon: MapPin },
+    { label: "Profile", href: "/account", icon: <User size={18} /> },
+    {
+      label: "My Orders",
+      href: "/account/orders",
+      icon: <Receipt size={18} />,
+    },
+    {
+      label: "Reviews",
+      href: "/account/reviews",
+      icon: <MessageSquare size={18} />,
+    },
+    { label: "Wishlist", href: "/account/wishlist", icon: <Heart size={18} /> },
+    {
+      label: "Addresses",
+      href: "/account/address",
+      icon: <MapPin size={18} />,
+    },
   ];
 
+  if (!isMounted) return null;
+
   return (
-    <div className="w-full px-4">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <Toaster richColors position="top-center" />
-      {!isMounted ? (
-        <div className="rounded-lg p-6 text-center text-sm animate-pulse">
-          Loading account data...
+
+      {!user ? (
+        /* Empty State / Unauthorized */
+        <div className="min-h-[60vh] flex flex-col items-center justify-center text-center">
+          <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-6">
+            <User size={32} className="text-slate-300" />
+          </div>
+          <h2 className="text-2xl font-black text-slate-900 mb-2">
+            Access Denied
+          </h2>
+          <p className="text-slate-500 mb-8 max-w-xs">
+            Please login to manage your account and view your orders.
+          </p>
+          <Link href="/login">
+            <Button className="h-12 px-10 rounded-full bg-slate-900 font-bold uppercase tracking-widest text-xs">
+              Go to Login
+            </Button>
+          </Link>
         </div>
-      ) : user ? (
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-          <aside className="md:col-span-4 lg:col-span-3">
-            <div className="rounded-lg">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="h-10 w-10 rounded-full bg-primary text-white flex items-center justify-center font-semibold">
-                  {user?.name?.[0]?.toUpperCase() || "U"}
-                </div>
-                <div>
-                  <div className="font-semibold">{user?.name || "User"}</div>
-                  <div className="text-xs">
-                    {user?.email || "user@example.com"}
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+          {/* --- SIDEBAR NAV --- */}
+          <aside className="lg:col-span-3 space-y-8">
+            <div className="sticky top-28 space-y-8">
+              {/* User Brief Card */}
+              <div className="p-6 rounded-2xl bg-slate-900 text-white shadow-2xl shadow-slate-200">
+                <div className="flex items-center gap-4">
+                  <div className="h-12 w-12 rounded-2xl bg-primary/20 border border-primary/30 flex items-center justify-center text-primary font-black text-xl">
+                    {user?.name?.[0]?.toUpperCase()}
+                  </div>
+                  <div className="overflow-hidden">
+                    <p className="font-bold truncate text-sm leading-tight">
+                      {user?.name}
+                    </p>
+                    <p className="text-[10px] text-slate-400 truncate mt-1 uppercase tracking-wider font-black">
+                      Member Store
+                    </p>
                   </div>
                 </div>
               </div>
 
-              {/* Small screens: horizontal square menu with icons */}
-              {/* <nav className="md:hidden flex justify-between gap-1 overflow-x-auto py-1">
-                {items.map(({ href, label, Icon }) => {
-                  const active = pathname === href;
-                  return (
-                    <Link
-                      key={href}
-                      href={href}
-                      className={`shrink-0 w-16 h-16 rounded-xl border text-center flex flex-col items-center justify-center gap-2 transition-colors ${
-                        active
-                          ? "bg-secondary text-white border-transparent"
-                          : "bg-background/5 border-white/10 hover:bg-tertiary/70"
-                      }`}
-                    >
-                      <span className="text-[9px] font-medium">{label}</span>
-                    </Link>
-                  );
-                })}
-              </nav> */}
-
-              {/* md+ screens: vertical menu list */}
-              <nav className="mt-2 grid grid-cols-2 gap-2 md:flex md:flex-col md:gap-1">
+              {/* Navigation Menu */}
+              <nav className="flex flex-col gap-1">
+                <p className="px-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-4">
+                  Account Menu
+                </p>
                 {items.map((it) => {
-                  const startsWithOrder =
-                    it.href === "/account/orders" &&
-                    pathname?.startsWith("/account/orders/");
-                  const active = pathname === it.href || startsWithOrder;
+                  const isActive =
+                    pathname === it.href ||
+                    (it.href === "/account/orders" &&
+                      pathname?.startsWith("/account/orders/"));
+
                   return (
                     <Link
                       key={it.href}
                       href={it.href}
-                      className={`block w-full border  px-3 py-2 rounded transition-colors ${
-                        active
-                          ? "bg-primary text-white border-primary  "
-                          : "border-tertiary"
-                      }`}
+                      className={cn(
+                        "group flex items-center gap-4 px-4 py-4 rounded-2xl text-sm font-bold transition-all duration-200",
+                        isActive
+                          ? "bg-emerald-50 text-primary shadow-sm shadow-emerald-100/50"
+                          : "text-slate-500 hover:bg-slate-50 hover:text-slate-900",
+                      )}
                     >
+                      <span
+                        className={cn(
+                          "transition-colors",
+                          isActive
+                            ? "text-primary"
+                            : "text-slate-400 group-hover:text-slate-600",
+                        )}
+                      >
+                        {it.icon}
+                      </span>
                       {it.label}
+                      {isActive && (
+                        <ChevronRight size={14} className="ml-auto" />
+                      )}
                     </Link>
                   );
                 })}
+
+                <button className="mt-4 flex items-center gap-4 px-4 py-4 rounded-2xl text-sm font-bold text-red-400 hover:bg-red-50 hover:text-red-600 transition-all duration-200">
+                  <LogOut size={18} />
+                  Sign Out
+                </button>
               </nav>
             </div>
           </aside>
-          <div className="border-t-2 md:hidden" />
-          <section className="md:col-span-8 lg:col-span-9 space-y-4">
-            {children}
-          </section>
-        </div>
-      ) : (
-        <div className="flex flex-col gap-2 text-center text-sm ">
-          Please login to access your account.
-          <Link href="/login">
-            <Button className="ml-2" variant="secondary">
-              Login
-            </Button>
-          </Link>
+
+          {/* --- MAIN CONTENT AREA --- */}
+          <main className="lg:col-span-9 min-h-125">
+            <div className="bg-white/50 backdrop-blur-sm rounded-3xl p-4 md:p-10 border border-slate-100">
+              {children}
+            </div>
+          </main>
         </div>
       )}
     </div>

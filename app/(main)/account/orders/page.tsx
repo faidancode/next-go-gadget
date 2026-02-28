@@ -1,5 +1,16 @@
 "use client";
 
+import { useMemo, useState } from "react";
+import Link from "next/link";
+import {
+  Package,
+  ChevronRight,
+  Calendar,
+  Search,
+  ArrowUpDown,
+  Loader2,
+  Box,
+} from "lucide-react";
 import { useAuthStore } from "@/app/stores/auth";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Button } from "@/components/ui/button";
@@ -12,29 +23,35 @@ import {
 } from "@/components/ui/select";
 import { getErrorMessage } from "@/lib/api/fetcher";
 import { userOrders } from "@/lib/hooks/use-order";
-import { formatIDR } from "@/lib/utils";
+import { formatIDR, cn } from "@/lib/utils";
 import { Order } from "@/types/order";
-import { OrderItem } from "@/types/order-item";
-import Link from "next/link";
-import { useMemo, useState } from "react";
 
-const statusLabels: Record<string, string> = {
-  PAID: "Paid",
-  PENDING: "Pending",
-  PROCESSING: "Processing",
-  SHIPPED: "Shipped",
-  DELIVERED: "Delivered",
-  CANCELLED: "Cancelled",
-};
-
-const STATUS_STYLES: Record<string, string> = {
-  PENDING: "bg-gray-300 text-gray-700 border-gray-300",
-  PAID: "bg-blue-300 text-blue-700 border-blue-300",
-  PROCESSING: "bg-amber-300 text-amber-800 border-amber-300",
-  SHIPPED: "bg-purple-300 text-purple-700 border-purple-300",
-  DELIVERED: "bg-emerald-300 text-emerald-700 border-emerald-300",
-  COMPLETED: "bg-green-300 text-green-800 border-green-300",
-  CANCELLED: "bg-red-300 text-red-700 border-red-300",
+const STATUS_CONFIG: Record<string, { label: string; class: string }> = {
+  PENDING: {
+    label: "Pending",
+    class: "bg-amber-50 text-amber-600 border-amber-100",
+  },
+  PAID: { label: "Paid", class: "bg-blue-50 text-blue-600 border-blue-100" },
+  PROCESSING: {
+    label: "Processing",
+    class: "bg-indigo-50 text-indigo-600 border-indigo-100",
+  },
+  SHIPPED: {
+    label: "Shipped",
+    class: "bg-purple-50 text-purple-600 border-purple-100",
+  },
+  DELIVERED: {
+    label: "Delivered",
+    class: "bg-emerald-50 text-emerald-600 border-emerald-100",
+  },
+  COMPLETED: {
+    label: "Completed",
+    class: "bg-green-50 text-green-600 border-green-100",
+  },
+  CANCELLED: {
+    label: "Cancelled",
+    class: "bg-red-50 text-red-600 border-red-100",
+  },
 };
 
 const STATUS_OPTIONS = [
@@ -48,82 +65,95 @@ const STATUS_OPTIONS = [
   { value: "CANCELLED", label: "Cancelled" },
 ];
 
-function formatDate(date: string | undefined) {
-  if (!date) return "-";
-  return new Date(date).toLocaleDateString("id-ID", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-}
-
-function renderOrderItems(order: Order, formatter: (n: number) => string) {
-  const items: OrderItem[] = Array.isArray(order.items) ? order.items : [];
-  const itemsToShow = items.slice(0, 1);
-  const remaining = Math.max(0, items.length - itemsToShow.length);
-
-  return (
-    <div className="space-y-2">
-      {itemsToShow.map((item) => (
-        <div key={item.id} className="flex items-start justify-between gap-3">
-          <div className="flex-1 pr-3">
-            <div className="text-sm font-semibold">{item.nameSnapshot}</div>
-            <div className="text-xs">
-              {item.quantity} x {formatter(item.unitPrice)}
-            </div>
-          </div>
-          <div className="text-sm font-semibold">
-            {formatter(item.subtotal)}
-          </div>
-        </div>
-      ))}
-      {remaining > 0 ? (
-        <div className="text-white">
-          + {remaining} another book{remaining > 1 ? "s" : ""}
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
-function OrderCard({
-  order,
-  formatter,
-}: {
-  order: Order;
-  formatter: (n: number) => string;
-}) {
-  const statusKey = (order.status || "").toUpperCase();
-  const label = statusLabels[statusKey] ?? order.status ?? "Unknown";
-  const orderDate = order.placedAt || order.createdAt;
-  const badgeStyle =
-    STATUS_STYLES[statusKey] ?? "border-gray-700 bg-gray-100 text-gray-800";
+function OrderCard({ order }: { order: Order }) {
+  const status = (order.status || "PENDING").toUpperCase();
+  const config = STATUS_CONFIG[status] || STATUS_CONFIG.PENDING;
+  const items = order.items || [];
+  const firstItem = items[0];
+  const remainingCount = items.length - 1;
 
   return (
     <Link
       href={`/account/orders/${order.id}`}
-      className="block rounded-lg bg-tertiary border p-4 space-y-3 transition-colors"
+      className="group block bg-white rounded-[2rem] border border-slate-100 p-6 transition-all duration-300 hover:shadow-2xl hover:shadow-slate-200/50 hover:border-primary/20"
     >
-      <div className="flex items-start justify-between border-b pb-2">
-        <div className="text-sm">{formatDate(orderDate)}</div>
-
-        <div className="items-end space-y-2 text-right">
-          <div
-            className={`px-3 py-1 rounded-full border text-xs font-semibold uppercase inline-block ${badgeStyle}`}
+      <div className="flex flex-col gap-6">
+        {/* Top: Info & Status */}
+        <div className="flex items-center justify-between border-b border-slate-50 pb-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 bg-slate-50 rounded-xl text-slate-400 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+              <Package size={18} />
+            </div>
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                Order ID
+              </p>
+              <p className="text-sm font-bold text-slate-900 leading-none mt-1">
+                #{order.orderNumber || order.id.slice(0, 8).toUpperCase()}
+              </p>
+            </div>
+          </div>
+          <span
+            className={cn(
+              "px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border shadow-sm",
+              config.class,
+            )}
           >
-            {label}
+            {config.label}
+          </span>
+        </div>
+
+        {/* Middle: Product Snapshot */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            {/* Placeholder for Product Image - adapt to your logic */}
+            <div className="h-16 w-16 bg-slate-50 rounded-2xl flex items-center justify-center border border-slate-100 text-slate-300">
+              <Box size={24} />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-slate-800 line-clamp-1">
+                {firstItem?.nameSnapshot || "Multiple Products"}
+              </p>
+              <p className="text-xs text-slate-400 mt-1 font-medium">
+                {firstItem?.quantity} item{firstItem?.quantity > 1 ? "s" : ""} •{" "}
+                {formatIDR(firstItem?.unitPrice || 0)}
+              </p>
+              {remainingCount > 0 && (
+                <p className="text-[10px] font-bold text-primary mt-1 uppercase tracking-tight">
+                  + {remainingCount} other product
+                  {remainingCount > 1 ? "s" : ""}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="text-right hidden sm:block">
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">
+              Total Price
+            </p>
+            <p className="text-lg font-black text-slate-900 tracking-tighter">
+              {formatIDR(order.totalPrice)}
+            </p>
           </div>
         </div>
-      </div>
 
-      {order.items?.length ? (
-        <div className="space-y-2">{renderOrderItems(order, formatter)}</div>
-      ) : null}
-
-      <div className="flex items-center justify-end">
-        <div className="text-right">
-          <div className="text-xs">Total</div>
-          <div className="text-lg font-bold">{formatter(order.totalPrice)}</div>
+        {/* Bottom: Date & Link */}
+        <div className="flex items-center justify-between pt-4 border-t border-slate-50">
+          <div className="flex items-center gap-2 text-slate-400">
+            <Calendar size={14} />
+            <span className="text-[10px] font-bold uppercase tracking-wider">
+              {new Date(
+                order.placedAt || order.createdAt || "",
+              ).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })}
+            </span>
+          </div>
+          <div className="flex items-center gap-1 text-primary text-[10px] font-black uppercase tracking-widest group-hover:translate-x-1 transition-transform">
+            View Details <ChevronRight size={14} />
+          </div>
         </div>
       </div>
     </Link>
@@ -131,10 +161,10 @@ function OrderCard({
 }
 
 export default function OrdersPage() {
-  const PAGE_SIZE = 10;
   const user = useAuthStore((s) => s.user);
   const userId = user?.id;
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
+
   const {
     data,
     isLoading,
@@ -144,9 +174,8 @@ export default function OrdersPage() {
     fetchNextPage,
     isFetchingNextPage,
   } = userOrders(userId, statusFilter);
-  console.log({ data });
 
-  const orders = useMemo<Order[]>(() => {
+  const orders = useMemo(() => {
     return data?.pages?.flatMap((page) => page.items ?? []) ?? [];
   }, [data]);
 
@@ -156,68 +185,103 @@ export default function OrdersPage() {
 
   if (!user) {
     return (
-      <div className="py-4 text-sm">Silakan login untuk melihat pesanan.</div>
+      <div className="min-h-[40vh] flex flex-col items-center justify-center bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-100">
+        <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">
+          Please login to view orders.
+        </p>
+      </div>
     );
   }
 
   return (
-    <>
-      <div className="mb-4 flex justify-between gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="space-y-8">
+      {/* --- HEADER --- */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <h1 className="text-lg font-semibold">Orders</h1>
+          <h1 className="text-3xl font-black tracking-tighter text-slate-900">
+            Order <span className="text-primary italic">History</span>
+          </h1>
+          <p className="text-slate-500 font-medium mt-1">
+            Manage and track your recent transactions.
+          </p>
         </div>
-        <div>
-          <Select
-            value={statusFilter}
-            onValueChange={(val) => setStatusFilter(val)}
-          >
-            <SelectTrigger className="min-w-45 border-tertiary bg-tertiary text-sm">
-              <SelectValue placeholder="Filter status" />
-            </SelectTrigger>
-            <SelectContent>
-              {STATUS_OPTIONS.map((opt) => (
-                <SelectItem key={opt.value} value={opt.value}>
-                  {opt.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-full border border-slate-100 min-w-45">
+            <ArrowUpDown size={14} className="text-slate-400" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+              Status:
+            </span>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="border-none bg-transparent h-auto p-0 focus:ring-0 text-xs font-bold text-slate-800 shadow-none">
+                <SelectValue placeholder="All Status" />
+              </SelectTrigger>
+              <SelectContent
+                align="end"
+                className="rounded-2xl shadow-xl border-slate-100"
+              >
+                {STATUS_OPTIONS.map((opt) => (
+                  <SelectItem
+                    key={opt.value}
+                    value={opt.value}
+                    className="text-xs font-medium rounded-xl py-2 my-1"
+                  >
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
 
+      {/* --- ERROR STATE --- */}
       {errorMessage && (
-        <div className="mb-3 rounded border border-red-200 bg-red-100 p-3 text-xs text-red-600">
+        <div className="p-4 rounded-2xl bg-red-50 border border-red-100 text-red-600 text-[10px] font-black uppercase tracking-widest">
           {errorMessage}
         </div>
       )}
-      {(isLoading || isFetching) && orders.length === 0 && (
-        <div className="py-4 text-sm">Loading Order...</div>
-      )}
-      <div className="space-y-3">
-        {orders.length === 0 && !(isLoading || isFetching) ? (
-          <EmptyState title="You don't have any order yet" />
+
+      {/* --- CONTENT --- */}
+      <div className="space-y-4">
+        {isLoading ? (
+          <div className="py-20 flex flex-col items-center justify-center gap-4">
+            <Loader2 className="animate-spin text-primary" size={32} />
+            <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">
+              Loading orders...
+            </p>
+          </div>
+        ) : orders.length === 0 ? (
+          <div className="py-24 bg-slate-50/50 rounded-[3rem] border-2 border-dashed border-slate-100 flex flex-col items-center">
+            <div className="h-16 w-16 bg-white rounded-full flex items-center justify-center shadow-sm mb-4">
+              <Package size={24} className="text-slate-200" />
+            </div>
+            <p className="text-slate-500 font-bold text-sm">No orders found.</p>
+          </div>
         ) : (
-          orders.map((order) => (
-            <OrderCard key={order.id} order={order} formatter={formatIDR} />
-          ))
+          <div className="grid grid-cols-1 gap-5">
+            {orders.map((order) => (
+              <OrderCard key={order.id} order={order} />
+            ))}
+          </div>
         )}
       </div>
+
+      {/* --- PAGINATION --- */}
       {hasNextPage && (
-        <div className="mt-4 flex justify-center">
+        <div className="mt-12 flex justify-center">
           <Button
-            type="button"
-            variant="secondary"
-            disabled={isFetchingNextPage}
             onClick={() => fetchNextPage()}
-            className="px-6"
+            disabled={isFetchingNextPage}
+            className="h-12 px-10 rounded-full bg-white border border-slate-200 text-slate-900 font-black text-[10px] uppercase tracking-[0.2em] hover:bg-slate-50 shadow-sm transition-all"
           >
-            {isFetchingNextPage ? "Loading..." : "Load More"}
+            {isFetchingNextPage ? (
+              <Loader2 className="animate-spin mr-2" size={14} />
+            ) : null}
+            Load More History
           </Button>
         </div>
       )}
-      {isFetching && orders.length > 0 && !isFetchingNextPage && (
-        <div className="mt-2 text-center text-xs">Synchronizing...</div>
-      )}
-    </>
+    </div>
   );
 }

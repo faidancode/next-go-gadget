@@ -11,6 +11,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { Briefcase, Edit3, Home, MapPin, Plus, Star, Trash2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type AddressViewProps = {
   myAddresses: Address[];
@@ -24,80 +26,115 @@ export function AddressView({
   onOpenAdd,
   onEdit,
   onDelete,
-}: AddressViewProps) {
+}: {
+  myAddresses: Address[];
+  onOpenAdd: () => void;
+  onEdit: (addr: Address) => void;
+  onDelete: (addr: Address) => void;
+}) {
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold ">Address</h1>
-        <Button onClick={onOpenAdd}>Add Address</Button>
+    <div className="space-y-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-black tracking-tighter text-slate-900">
+            Shipping <span className="text-primary italic">Addresses</span>
+          </h1>
+          <p className="text-slate-500 font-medium mt-1">
+            Manage where your premium gear gets delivered.
+          </p>
+        </div>
+        <Button
+          onClick={onOpenAdd}
+          className="h-12 px-6 rounded-2xl bg-slate-900 hover:bg-primary transition-all shadow-lg shadow-slate-200 flex items-center gap-2 group"
+        >
+          <Plus
+            size={18}
+            className="group-hover:rotate-90 transition-transform"
+          />
+          <span className="font-bold uppercase tracking-widest text-[10px]">
+            Add New Address
+          </span>
+        </Button>
       </div>
+
       {myAddresses.length === 0 ? (
-        <div className="rounded-lg bg-tertiary p-4 text-sm">
-          No address yet.
+        <div className="flex flex-col items-center justify-center py-20 border-2 border-dashed border-slate-100 rounded-[3rem] bg-slate-50/50">
+          <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mb-4">
+            <MapPin size={24} className="text-slate-300" />
+          </div>
+          <p className="text-slate-500 font-bold">No addresses saved yet.</p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {myAddresses.map((addr) => (
-            <div key={addr.id} className="rounded-md border bg-tertiary p-4">
-              <div className="flex flex-col items-start justify-between gap-4">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold ">{addr.label}</span>
-                    {addr.isPrimary && (
-                      <span className="rounded-full bg-secondary/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ">
-                        Primary
-                      </span>
+            <div
+              key={addr.id}
+              className={cn(
+                "group relative p-6 rounded-[2.5rem] border-2 transition-all duration-300",
+                addr.isPrimary
+                  ? "border-primary bg-emerald-50/30 shadow-xl shadow-emerald-100/20"
+                  : "border-slate-100 bg-white hover:border-slate-200 hover:shadow-lg hover:shadow-slate-100",
+              )}
+            >
+              {addr.isPrimary && (
+                <div className="absolute -top-3 left-8 px-3 py-1 bg-primary text-white text-[10px] font-black uppercase tracking-widest rounded-full shadow-lg">
+                  Default Address
+                </div>
+              )}
+
+              <div className="flex justify-between items-start mb-4">
+                <div className="flex items-center gap-3">
+                  <div
+                    className={cn(
+                      "p-2.5 rounded-xl",
+                      addr.isPrimary
+                        ? "bg-primary text-white"
+                        : "bg-slate-100 text-slate-400",
+                    )}
+                  >
+                    {addr.label?.toLowerCase() === "office" ? (
+                      <Briefcase size={18} />
+                    ) : (
+                      <Home size={18} />
                     )}
                   </div>
-                  <div className="flex flex-col text-xs gap-1">
-                    <span>{addr.recipientName}</span>
-                    <span className="text-gray-500">{addr.recipientPhone}</span>
-                  </div>
-                  <div className="mt-1 text-x">
-                    {addr.street}, {addr.subdistrict}, {addr.district},{" "}
-                    {addr.city}, {addr.province} {addr.postalCode}
-                  </div>
+                  <h3 className="font-black text-slate-900 uppercase tracking-tight">
+                    {addr.label || "Home"}
+                  </h3>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Button
+
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button
                     onClick={() => onEdit(addr)}
-                    className="text-xs font-semibold hover:text-white"
-                    size="sm"
+                    className="p-2 hover:bg-white hover:text-primary rounded-lg transition-colors text-slate-400"
                   >
-                    Edit
-                  </Button>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        variant="destructive"
-                        className="text-xs font-semibold"
-                        size="sm"
-                      >
-                        Delete
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>
-                          Delete this address?
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                          <strong>{addr.label}</strong> will be permanently
-                          deleted. This action cannot be undone.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => onDelete(addr)}
-                        >
-                          Delete
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                    <Edit3 size={16} />
+                  </button>
+                  <button
+                    onClick={() => onDelete(addr)}
+                    className="p-2 hover:bg-red-50 hover:text-red-500 rounded-lg transition-colors text-slate-400"
+                  >
+                    <Trash2 size={16} />
+                  </button>
                 </div>
               </div>
+
+              <div className="space-y-1 mb-6">
+                {/* <p className="font-bold text-slate-800">{addr.receiverName}</p>
+                <p className="text-xs text-slate-500 font-medium">
+                  {addr.phoneNumber}
+                </p> */}
+                <p className="text-sm text-slate-600 leading-relaxed mt-3 pr-4">
+                  {addr.street}, {addr.city}, {addr.province} {addr.postalCode}
+                </p>
+              </div>
+
+              {!addr.isPrimary && (
+                <button className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-primary transition-colors flex items-center gap-1.5">
+                  <Star size={12} />
+                  Set as Default
+                </button>
+              )}
             </div>
           ))}
         </div>

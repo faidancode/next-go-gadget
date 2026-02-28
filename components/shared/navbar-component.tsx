@@ -9,7 +9,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { apiRequest } from "@/lib/api/fetcher";
-import { Menu, ShoppingBag, User as UserIcon, X } from "lucide-react";
+import {
+  BadgeCheck,
+  ChevronRight,
+  Home,
+  LayoutGrid,
+  Menu,
+  ShoppingBag,
+  User as UserIcon,
+  X,
+  Zap,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -18,6 +28,7 @@ import { toast } from "sonner";
 import { Logo } from "./logo";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "../ui/button";
 
 export function Navbar() {
   const appName = process.env.APP_NAME || "GoGadget";
@@ -86,7 +97,7 @@ export function Navbar() {
 
         {/* Center: Desktop Nav */}
         <div className="hidden md:flex items-center gap-8">
-          {["Home", "Shop", "Categories"].map((item) => (
+          {["Home", "Shop", "Categories", "Brands"].map((item) => (
             <Link
               key={item}
               href={item === "Home" ? "/" : `/${item.toLowerCase()}`}
@@ -153,6 +164,7 @@ export function Navbar() {
       </div>
 
       {/* Mobile Drawer with Framer Motion */}
+      {/* Mobile Drawer with Framer Motion */}
       <AnimatePresence>
         {drawerOpen && (
           <>
@@ -161,49 +173,141 @@ export function Navbar() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setDrawerOpen(false)}
-              className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm md:hidden"
+              className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm md:hidden"
             />
             <motion.div
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed left-0 top-0 z-50 h-full w-72 bg-white shadow-2xl p-6 md:hidden flex flex-col"
+              /* Tambahkan z-index yang lebih tinggi dan pastikan bg-white solid */
+              className="fixed left-0 top-0 z-60 h-full w-[85%] max-w-[320px] bg-white opacity-100 shadow-2xl md:hidden flex flex-col border-r border-slate-300"
             >
-              <div className="flex items-center justify-between mb-10">
-                <span className="font-serif italic text-2xl tracking-tighter text-slate-900">
-                  {appName}
-                </span>
+              {/* Header Drawer */}
+              <div className="p-6 bg-white flex items-center justify-between border-b border-slate-50">
+                <div className="flex items-center gap-2">
+                  <div className="bg-primary p-1.5 rounded-lg">
+                    <Image
+                      src="/logo.svg"
+                      alt="Logo"
+                      width={18}
+                      height={18}
+                      className="brightness-0 invert"
+                    />
+                  </div>
+                  <span className="font-serif italic text-xl tracking-tighter text-slate-900">
+                    {appName}
+                  </span>
+                </div>
                 <button
                   onClick={() => setDrawerOpen(false)}
-                  className="p-2 text-slate-400"
+                  className="p-2 bg-slate-50 text-slate-400 rounded-full hover:text-slate-900 transition-colors"
                 >
-                  <X size={24} />
+                  <X size={20} />
                 </button>
               </div>
 
-              <nav className="flex flex-col gap-2 flex-1">
-                {["Home", "Shop", "Categories"].map((item) => (
-                  <Link
-                    key={item}
-                    href={item === "Home" ? "/" : `/${item.toLowerCase()}`}
-                    onClick={() => setDrawerOpen(false)}
-                    className="px-4 py-4 rounded-2xl text-lg font-medium text-slate-600 hover:bg-emerald-50 hover:text-emerald-700 transition-colors"
-                  >
-                    {item}
-                  </Link>
-                ))}
+              {/* Navigation Links */}
+              <nav className="flex-1 px-4 py-8 flex flex-col gap-1 bg-white">
+                <p className="px-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">
+                  Main Menu
+                </p>
+                {[
+                  { name: "Home", href: "/", icon: <Home size={20} /> },
+                  {
+                    name: "Shop",
+                    href: "/shop",
+                    icon: <ShoppingBag size={20} />,
+                  },
+                  {
+                    name: "Categories",
+                    href: "/categories",
+                    icon: <LayoutGrid size={20} />,
+                  },
+                  {
+                    name: "Brands",
+                    href: "/brands",
+                    icon: <BadgeCheck size={20} />,
+                  },
+                ].map((item) => {
+                  const isActive = pathname === item.href;
+                  return (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      onClick={() => setDrawerOpen(false)}
+                      className={cn(
+                        "flex items-center gap-4 px-4 py-4 rounded-2xl text-base font-bold transition-all duration-200",
+                        isActive
+                          ? "bg-emerald-50 text-primary shadow-sm shadow-emerald-100/50"
+                          : "text-slate-500 hover:bg-slate-50 hover:text-slate-900",
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          "transition-colors",
+                          isActive ? "text-primary" : "text-slate-400",
+                        )}
+                      >
+                        {item.icon}
+                      </span>
+                      {item.name}
+                      {isActive && (
+                        <div className="ml-auto w-1.5 h-1.5 rounded-full bg-primary" />
+                      )}
+                    </Link>
+                  );
+                })}
               </nav>
 
-              {!user && (
-                <Link
-                  href="/login"
-                  onClick={() => setDrawerOpen(false)}
-                  className="w-full py-4 rounded-2xl text-center font-bold bg-primary text-white shadow-lg shadow-emerald-100"
-                >
-                  Sign In
-                </Link>
-              )}
+              {/* Footer Area: User Profile / Login */}
+              <div className="p-6 mt-auto border-t border-slate-50 bg-white">
+                {user ? (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3 px-2">
+                      <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-primary shadow-sm">
+                        <UserIcon size={20} />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-black text-slate-900 leading-none">
+                          My Account
+                        </span>
+                        <span className="text-xs text-slate-500 mt-1 truncate max-w-37.5">
+                          {user.email}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          router.push("/account");
+                          setDrawerOpen(false);
+                        }}
+                        className="rounded-xl border-slate-200 font-bold text-xs h-11"
+                      >
+                        Settings
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        onClick={handleLogout}
+                        className="rounded-xl font-bold text-xs text-red-500 hover:bg-red-50 hover:text-red-600 h-11"
+                      >
+                        Logout
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <Link
+                    href="/login"
+                    onClick={() => setDrawerOpen(false)}
+                    className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl font-black text-sm uppercase tracking-widest bg-slate-900 text-white shadow-xl shadow-slate-200 transition-transform active:scale-95"
+                  >
+                    Sign In to Store
+                    <ChevronRight size={16} />
+                  </Link>
+                )}
+              </div>
             </motion.div>
           </>
         )}

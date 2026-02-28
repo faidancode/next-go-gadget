@@ -46,26 +46,38 @@ export function RegisterForm({
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <div className={cn("grid gap-6", className)} {...props}>
-      <Card className="border-border/40 bg-card/60 backdrop-blur-sm shadow-xl">
-        <CardHeader className="space-y-3 pb-6 text-center">
-          <Logo />
+    <div
+      className={cn("grid gap-8 w-full max-w-2xl mx-auto", className)}
+      {...props}
+    >
+      <Card className="border-slate-200/80 bg-white/80 backdrop-blur-xl shadow-2xl shadow-emerald-950/5 rounded-[2.5rem] overflow-hidden">
+        <CardHeader className="space-y-4 pb-6 text-center pt-10">
+          <div className="flex justify-center mb-2">
+            <Logo />
+          </div>
           <div className="space-y-1">
-            <CardTitle className="text-2xl font-bold tracking-tight">
-              Create an account
+            <CardTitle className="text-3xl font-black tracking-tight text-slate-900">
+              Create <span className="text-primary italic">Account</span>
             </CardTitle>
-            <CardDescription className="text-muted-foreground">
-              Join {appName} and get the latest tech gear
+            <CardDescription className="text-slate-500 font-medium">
+              Join {appName} to unlock exclusive tech deals.
             </CardDescription>
           </div>
         </CardHeader>
 
-        <CardContent className="grid gap-5">
-          {serverError && <Alert variant="error">{serverError}</Alert>}
+        <CardContent className="grid gap-6 px-8 pb-10">
+          {serverError && (
+            <Alert
+              variant="error"
+              className="rounded-2xl animate-in fade-in zoom-in-95"
+            >
+                {serverError}
+            </Alert>
+          )}
 
           <form
             onSubmit={handleSubmit(onSubmit)}
-            className="grid gap-4"
+            className="grid gap-5"
             noValidate
           >
             {/* Row for First Name & Last Name */}
@@ -73,7 +85,10 @@ export function RegisterForm({
               <div className="grid gap-2">
                 <Label
                   htmlFor="firstName"
-                  className={cn(errors.firstName && "text-destructive")}
+                  className={cn(
+                    "text-xs font-black uppercase tracking-widest ml-1",
+                    errors.firstName ? "text-red-500" : "text-slate-400",
+                  )}
                 >
                   First Name
                 </Label>
@@ -81,15 +96,15 @@ export function RegisterForm({
                   id="firstName"
                   placeholder="John"
                   className={cn(
-                    "bg-background/50",
+                    "h-12 rounded-2xl bg-slate-50 border-slate-200 focus:bg-white transition-all",
                     errors.firstName &&
-                      "border-destructive focus-visible:ring-destructive",
+                      "border-red-500 focus-visible:ring-red-500",
                   )}
                   disabled={isLoading}
                   {...register("firstName")}
                 />
                 {errors.firstName?.message && (
-                  <p className="text-[0.7rem] font-medium text-destructive">
+                  <p className="text-[10px] font-bold text-red-500 ml-1 uppercase">
                     {errors.firstName.message}
                   </p>
                 )}
@@ -97,7 +112,10 @@ export function RegisterForm({
               <div className="grid gap-2">
                 <Label
                   htmlFor="lastName"
-                  className={cn(errors.lastName && "text-destructive")}
+                  className={cn(
+                    "text-xs font-black uppercase tracking-widest ml-1",
+                    errors.lastName ? "text-red-500" : "text-slate-400",
+                  )}
                 >
                   Last Name
                 </Label>
@@ -105,15 +123,15 @@ export function RegisterForm({
                   id="lastName"
                   placeholder="Doe"
                   className={cn(
-                    "bg-background/50",
+                    "h-12 rounded-2xl bg-slate-50 border-slate-200 focus:bg-white transition-all",
                     errors.lastName &&
-                      "border-destructive focus-visible:ring-destructive",
+                      "border-red-500 focus-visible:ring-red-500",
                   )}
                   disabled={isLoading}
                   {...register("lastName")}
                 />
                 {errors.lastName?.message && (
-                  <p className="text-[0.7rem] font-medium text-destructive">
+                  <p className="text-[10px] font-bold text-red-500 ml-1 uppercase">
                     {errors.lastName.message}
                   </p>
                 )}
@@ -124,7 +142,10 @@ export function RegisterForm({
             <div className="grid gap-2">
               <Label
                 htmlFor="email"
-                className={cn(errors.email && "text-destructive")}
+                className={cn(
+                  "text-xs font-black uppercase tracking-widest ml-1",
+                  errors.email ? "text-red-500" : "text-slate-400",
+                )}
               >
                 Email Address
               </Label>
@@ -133,15 +154,14 @@ export function RegisterForm({
                 type="email"
                 placeholder="m@example.com"
                 className={cn(
-                  "bg-background/50",
-                  errors.email &&
-                    "border-destructive focus-visible:ring-destructive",
+                  "h-12 rounded-2xl bg-slate-50 border-slate-200 focus:bg-white transition-all",
+                  errors.email && "border-red-500 focus-visible:ring-red-500",
                 )}
                 disabled={isLoading}
                 {...register("email")}
               />
               {errors.email?.message && (
-                <p className="text-[0.7rem] font-medium text-destructive">
+                <p className="text-[10px] font-bold text-red-500 ml-1 uppercase">
                   {errors.email.message}
                 </p>
               )}
@@ -151,7 +171,10 @@ export function RegisterForm({
             <div className="grid gap-2">
               <Label
                 htmlFor="password"
-                className={cn(errors.password && "text-destructive")}
+                className={cn(
+                  "text-xs font-black uppercase tracking-widest ml-1",
+                  errors.password ? "text-red-500" : "text-slate-400",
+                )}
               >
                 Password
               </Label>
@@ -160,9 +183,9 @@ export function RegisterForm({
                   id="password"
                   type={showPassword ? "text" : "password"}
                   className={cn(
-                    "bg-background/50 pr-10",
+                    "h-12 rounded-2xl bg-slate-50 border-slate-200 pr-11 focus:bg-white transition-all",
                     errors.password &&
-                      "border-destructive focus-visible:ring-destructive",
+                      "border-red-500 focus-visible:ring-red-500",
                   )}
                   disabled={isLoading}
                   {...register("password")}
@@ -170,13 +193,13 @@ export function RegisterForm({
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors"
                 >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
               {errors.password?.message && (
-                <p className="text-[0.7rem] font-medium text-destructive">
+                <p className="text-[10px] font-bold text-red-500 ml-1 uppercase">
                   {errors.password.message}
                 </p>
               )}
@@ -187,7 +210,10 @@ export function RegisterForm({
               <Label
                 htmlFor="passwordConfirmation"
                 className={cn(
-                  errors.passwordConfirmation && "text-destructive",
+                  "text-xs font-black uppercase tracking-widest ml-1",
+                  errors.passwordConfirmation
+                    ? "text-red-500"
+                    : "text-slate-400",
                 )}
               >
                 Confirm Password
@@ -196,15 +222,15 @@ export function RegisterForm({
                 id="passwordConfirmation"
                 type="password"
                 className={cn(
-                  "bg-background/50",
+                  "h-12 rounded-2xl bg-slate-50 border-slate-200 focus:bg-white transition-all",
                   errors.passwordConfirmation &&
-                    "border-destructive focus-visible:ring-destructive",
+                    "border-red-500 focus-visible:ring-red-500",
                 )}
                 disabled={isLoading}
                 {...register("passwordConfirmation")}
               />
               {errors.passwordConfirmation?.message && (
-                <p className="text-[0.7rem] font-medium text-destructive">
+                <p className="text-[10px] font-bold text-red-500 ml-1 uppercase">
                   {errors.passwordConfirmation.message}
                 </p>
               )}
@@ -212,63 +238,59 @@ export function RegisterForm({
 
             <Button
               type="submit"
-              className="w-full mt-2 shadow-lg shadow-primary/20"
+              className="w-full h-12 mt-2 rounded-2xl bg-primary text-white font-bold shadow-lg shadow-emerald-200 hover:shadow-emerald-300 transition-all active:scale-[0.98]"
               disabled={isLoading}
             >
               {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating account...
-                </>
+                <div className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Creating Account...</span>
+                </div>
               ) : (
                 "Create Account"
               )}
             </Button>
           </form>
 
-          <div className="text-center text-sm">
-            <span className="text-muted-foreground">
+          <div className="text-center mt-2">
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
               Already have an account?{" "}
-            </span>
-            <Link
-              href="/login"
-              className="font-medium text-primary hover:underline"
-            >
-              Login
-            </Link>
+              <Link href="/login" className="text-primary hover:underline ml-1">
+                Login
+              </Link>
+            </p>
           </div>
 
-          <div className="flex justify-center border-t border-border/40 pt-6">
+          <div className="flex justify-center pt-2 border-t border-slate-200">
             <Link
               href="/"
-              className="group inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-all"
+              className="group inline-flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-primary transition-all uppercase tracking-widest"
             >
               <ArrowLeft
                 size={14}
                 className="group-hover:-translate-x-1 transition-transform"
               />
-              Back to home
+              Back to Home
             </Link>
           </div>
         </CardContent>
       </Card>
 
-      <p className="px-8 text-center text-[0.75rem] leading-relaxed text-muted-foreground">
-        By creating an account, you agree to our{" "}
+      <p className="px-8 text-center text-[10px] font-bold uppercase tracking-tighter leading-relaxed text-slate-400">
+        By joining, you agree to our{" "}
         <Link
           href="/terms"
-          className="underline underline-offset-4 hover:text-primary"
+          className="text-slate-600 hover:text-primary underline-offset-4 decoration-2"
         >
           Terms
         </Link>{" "}
-        and{" "}
+        &{" "}
         <Link
           href="/privacy"
-          className="underline underline-offset-4 hover:text-primary"
+          className="text-slate-600 hover:text-primary underline-offset-4 decoration-2"
         >
-          Privacy Policy
+          Privacy
         </Link>
-        .
       </p>
     </div>
   );

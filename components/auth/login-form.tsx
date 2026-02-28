@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { SubmitHandler, UseFormReturn } from "react-hook-form";
-import { ArrowLeft, Eye, EyeOff, Loader2 } from "lucide-react";
+import { AlertCircle, ArrowLeft, Eye, EyeOff, Loader2 } from "lucide-react";
 
 import { Logo } from "@/components/shared/logo";
 import { Alert } from "@/components/shared/alert";
@@ -52,36 +52,48 @@ export function LoginForm({
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <div className={cn("grid gap-6", className)} {...props}>
-      <Card className="border-border/40 bg-card/60 backdrop-blur-sm shadow-xl">
-        <CardHeader className="space-y-3 pb-8 text-center">
-          <Logo />
+    <div
+      className={cn("grid gap-8 w-full max-w-100 mx-auto", className)}
+      {...props}
+    >
+      <Card className="border-slate-200/60 bg-white/80 backdrop-blur-xl shadow-2xl shadow-emerald-950/5 rounded-[2.5rem] overflow-hidden">
+        <CardHeader className="space-y-4 pb-6 text-center pt-10">
+          <div className="flex justify-center mb-2">
+            <Logo />
+          </div>
           <div className="space-y-1">
-            <CardTitle className="text-2xl font-bold tracking-tight">
-              Welcome back
+            <CardTitle className="text-3xl font-black tracking-tight text-slate-900">
+              Welcome <span className="text-primary italic">Back</span>
             </CardTitle>
-            <CardDescription className="text-muted-foreground">
-              Enter your credentials to continue shopping.
+            <CardDescription className="text-slate-500 font-medium">
+              Enter your credentials to access your tech hub.
             </CardDescription>
           </div>
         </CardHeader>
 
-        <CardContent className="grid gap-6">
+        <CardContent className="grid gap-6 px-8 pb-10">
           {/* Messages Section */}
           {(loginMessage || serverError) && (
-            <div className="space-y-3">
+            <div className="animate-in fade-in zoom-in-95 duration-300">
               {loginMessage && (
-                <Alert variant={loginMessage.variant}>
+                <Alert
+                  variant={loginMessage.variant}
+                  className="rounded-2xl border-emerald-100 bg-emerald-50 text-emerald-700"
+                >
                   {loginMessage.message}
                 </Alert>
               )}
-              {serverError && <Alert variant="error">{serverError}</Alert>}
+              {serverError && (
+                <Alert variant="error" className="rounded-2xl">
+                  {serverError}
+                </Alert>
+              )}
               {showResend && (
                 <Link
                   href={`/resend-email-confirmation?email=${encodeURIComponent(form.getValues("email"))}`}
-                  className="block text-center text-xs font-medium text-primary hover:underline"
+                  className="mt-3 block text-center text-xs font-bold text-primary hover:underline uppercase tracking-wider"
                 >
-                  Didn&apos;t receive code? Resend verification
+                  Resend verification code
                 </Link>
               )}
             </div>
@@ -89,14 +101,17 @@ export function LoginForm({
 
           <form
             onSubmit={handleSubmit(onSubmit)}
-            className="grid gap-4"
+            className="grid gap-5"
             noValidate
           >
             {/* Email Field */}
             <div className="grid gap-2">
               <Label
                 htmlFor="email"
-                className={cn(errors.email && "text-destructive")}
+                className={cn(
+                  "text-xs font-black uppercase tracking-widest ml-1",
+                  errors.email ? "text-red-500" : "text-slate-400",
+                )}
               >
                 Email Address
               </Label>
@@ -105,15 +120,14 @@ export function LoginForm({
                 type="email"
                 placeholder="name@gadgetstore.com"
                 className={cn(
-                  "bg-background/50",
-                  errors.email &&
-                    "border-destructive focus-visible:ring-destructive",
+                  "h-12 rounded-2xl bg-slate-50 border-slate-200 focus:bg-white transition-all",
+                  errors.email && "border-red-500 focus-visible:ring-red-500",
                 )}
                 disabled={isLoading}
                 {...register("email")}
               />
               {errors.email?.message && (
-                <p className="text-[0.8rem] font-medium text-destructive">
+                <p className="text-[10px] font-bold text-red-500 ml-1 uppercase">
                   {errors.email.message}
                 </p>
               )}
@@ -121,18 +135,21 @@ export function LoginForm({
 
             {/* Password Field */}
             <div className="grid gap-2">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between ml-1">
                 <Label
                   htmlFor="password"
-                  className={cn(errors.password && "text-destructive")}
+                  className={cn(
+                    "text-xs font-black uppercase tracking-widest",
+                    errors.password ? "text-red-500" : "text-slate-400",
+                  )}
                 >
                   Password
                 </Label>
                 <Link
                   href="/forgot-password"
-                  className="text-xs font-medium text-primary hover:text-primary/80 transition-colors"
+                  className="text-[10px] font-black uppercase text-primary hover:opacity-80 tracking-wider"
                 >
-                  Forgot password?
+                  Forgot?
                 </Link>
               </div>
               <div className="relative">
@@ -140,9 +157,9 @@ export function LoginForm({
                   id="password"
                   type={showPassword ? "text" : "password"}
                   className={cn(
-                    "bg-background/50 pr-10",
+                    "h-12 rounded-2xl bg-slate-50 border-slate-200 pr-11 focus:bg-white transition-all",
                     errors.password &&
-                      "border-destructive focus-visible:ring-destructive",
+                      "border-red-500 focus-visible:ring-red-500",
                   )}
                   disabled={isLoading}
                   {...register("password")}
@@ -150,13 +167,13 @@ export function LoginForm({
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors"
                 >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
               {errors.password?.message && (
-                <p className="text-[0.8rem] font-medium text-destructive">
+                <p className="text-[10px] font-bold text-red-500 ml-1 uppercase">
                   {errors.password.message}
                 </p>
               )}
@@ -164,14 +181,14 @@ export function LoginForm({
 
             <Button
               type="submit"
-              className="w-full mt-2 shadow-lg shadow-primary/20"
+              className="w-full h-12 mt-2 rounded-2xl bg-primary text-white font-bold shadow-lg shadow-emerald-200 hover:shadow-emerald-300 transition-all active:scale-[0.98]"
               disabled={isLoading}
             >
               {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Authenticating...
-                </>
+                <div className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Authenticating...</span>
+                </div>
               ) : (
                 "Sign In"
               )}
@@ -180,54 +197,51 @@ export function LoginForm({
 
           <div className="relative my-2">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-muted/50" />
+              <span className="w-full border-t border-slate-100" />
             </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">
-                New to GoGadget?
-              </span>
+            <div className="relative flex justify-center text-[10px] font-black uppercase tracking-widest">
+              <span className="bg-white px-4 text-slate-400">New Partner?</span>
             </div>
           </div>
 
           <Button
             variant="outline"
-            className="w-full bg-transparent border-muted-foreground/20"
+            className="w-full h-12 rounded-2xl border-slate-200 font-bold text-slate-600 hover:bg-slate-50"
             asChild
           >
-            <Link href="/register">Create an account</Link>
+            <Link href="/register">Create an Account</Link>
           </Button>
 
-          <div className="flex justify-center border-t border-border/40 pt-6">
+          <div className="flex justify-center pt-2">
             <Link
               href="/"
-              className="group inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-all"
+              className="group inline-flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-primary transition-all uppercase tracking-widest"
             >
               <ArrowLeft
                 size={14}
                 className="group-hover:-translate-x-1 transition-transform"
               />
-              Back to home
+              Home
             </Link>
           </div>
         </CardContent>
       </Card>
 
-      <p className="px-8 text-center text-xs leading-relaxed text-muted-foreground">
-        By continuing, you agree to our{" "}
+      <p className="px-8 text-center text-[10px] font-bold uppercase tracking-tighter leading-relaxed text-slate-400">
+        Secured session. By continuing, you agree to our{" "}
         <Link
           href="/terms"
-          className="underline underline-offset-4 hover:text-primary"
+          className="text-slate-600 hover:text-primary underline-offset-4 decoration-2"
         >
           Terms
         </Link>{" "}
-        and{" "}
+        &{" "}
         <Link
           href="/privacy"
-          className="underline underline-offset-4 hover:text-primary"
+          className="text-slate-600 hover:text-primary underline-offset-4 decoration-2"
         >
-          Privacy Policy
+          Privacy
         </Link>
-        .
       </p>
     </div>
   );

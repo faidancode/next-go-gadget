@@ -39,15 +39,13 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center gap-6 p-4 md:p-10">
-      <div className="flex w-full max-w-sm flex-col gap-6">
-        <RegisterForm
-          form={form}
-          onSubmit={handleSubmit}
-          isLoading={isPending}
-          serverError={serverError}
-        />
-      </div>
+    <div className="flex min-h-svh max-w-xl flex-col items-center justify-center gap-6 p-4 md:p-10">
+      <RegisterForm
+        form={form}
+        onSubmit={handleSubmit}
+        isLoading={isPending}
+        serverError={serverError}
+      />
     </div>
   );
 }

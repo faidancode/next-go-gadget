@@ -21,7 +21,7 @@ export default function CategoriesPage() {
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100 mb-6">
               <LayoutGrid size={14} className="text-primary" />
               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">
-                Product Taxonomy
+                Categories
               </span>
             </div>
             <h1 className="text-4xl md:text-6xl font-black tracking-tight text-slate-900 mb-6">
@@ -120,7 +120,7 @@ export default function CategoriesPage() {
         )}
       </section>
 
-      {/* 3. Help Section */}
+      {/* 3. Help Section
       <section className="container max-w-7xl mx-auto px-4 mt-20">
         <div className="bg-slate-900 rounded-[3rem] p-12 text-center relative overflow-hidden">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(circle_at_center,var(--tw-gradient-stops))] from-primary/20 via-transparent to-transparent pointer-events-none" />
@@ -138,7 +138,7 @@ export default function CategoriesPage() {
             Contact Support
           </Link>
         </div>
-      </section>
+      </section> */}
     </main>
   );
 }

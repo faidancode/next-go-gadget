@@ -11,18 +11,28 @@ export function useProducts(
     enabled = true,
     limit = PAGE_SIZE,
     categories,
+    brandSlug,
     minPrice,
     maxPrice,
     sort,
   } = params || {};
 
   return useInfiniteQuery({
-    queryKey: ["products", limit, categories, minPrice, maxPrice, sort],
+    queryKey: [
+      "products",
+      limit,
+      categories,
+      brandSlug,
+      minPrice,
+      maxPrice,
+      sort,
+    ],
     queryFn: ({ pageParam = 1 }) =>
       listProducts({
         page: pageParam,
         limit,
         categories,
+        brandSlug,
         minPrice,
         maxPrice,
         sort,

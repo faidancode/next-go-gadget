@@ -36,6 +36,7 @@ export type ProductListParams = {
   search?: string;
   categories?: string[];
   category?: string;
+  brandSlug?: string;
   minPrice?: number;
   maxPrice?: number;
   sort?: string;

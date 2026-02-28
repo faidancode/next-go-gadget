@@ -18,7 +18,7 @@ export function ProductCard({ product, actions }: ProductCardProps) {
   const hasDiscount = !!product.discountPriceCents;
 
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-[2rem] border border-slate-100 bg-white transition-all duration-500 hover:shadow-2xl hover:shadow-emerald-500/10 hover:-translate-y-1">
+    <div className="group relative flex flex-col overflow-hidden rounded-[2rem] border border-slate-200/60 bg-white transition-all duration-500 hover:shadow-2xl hover:shadow-emerald-500/10 hover:-translate-y-1">
       {/* Image Container */}
       <Link
         href={`/products/${product.slug}`}

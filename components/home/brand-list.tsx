@@ -42,7 +42,7 @@ export function Brands() {
           displayed.map((brand) => (
             <Link
               key={brand.id ?? brand.slug}
-              href={`/shop/brands/${brand.slug}`}
+              href={`/brands/${brand.slug}`}
               className="group relative flex flex-col items-center justify-center gap-3 overflow-hidden rounded-[2rem] border border-transparent bg-white p-8 transition-all duration-500 hover:border-emerald-100 hover:shadow-xl hover:shadow-emerald-500/10 active:scale-95 shadow-sm"
             >
               {/* Logo Container */}

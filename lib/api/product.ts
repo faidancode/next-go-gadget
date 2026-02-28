@@ -12,6 +12,7 @@ export async function listProducts<TProduct extends Product = Product>(
     limit: params?.limit,
     search: params?.search,
     category_ids: params?.categories,
+    brand_slug: params?.brandSlug,
     min_price: params?.minPrice,
     max_price: params?.maxPrice,
     sort_by: params?.sort,

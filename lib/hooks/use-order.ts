@@ -8,10 +8,14 @@ import { toast } from "sonner";
 import { resolveNextPage } from "../api/normalizers";
 import {
   cancelOrderByCustomer,
+  createMidtransSnapTransaction,
   getOrderDetail,
   listOrdersByUser,
   markOrderAsCompletedByCustomer
 } from "../api/order";
+import { getErrorMessage } from "../api/fetcher";
+import { Order } from "@/types/order";
+import { payWithMidtransSnap } from "../payments/midtrans";
 
 export function useOrder(orderId: string) {
   return useQuery({
@@ -54,40 +58,38 @@ export function useUpdateOrder(orderId: string) {
   });
 }
 
-// export function useOrderPayment() {
-//   const queryClient = useQueryClient();
+export function useOrderPayment() {
+  const queryClient = useQueryClient();
 
-//   return useMutation({
-//     mutationFn: async (order: Order) => {
-//       // Step 1: Validasi awal
-//       if (!order) throw new Error("Order data is not available.");
+  return useMutation({
+    mutationFn: async (order: Order) => {
+      // Step 1: Validasi awal
+      if (!order) throw new Error("Order data is not available.");
 
-//       // Step 2: Langsung panggil API untuk dapatkan token (Ganti logic handleMidtrans)
-//       const payload = await createMidtransSnapTransaction(order.id);
-//       const snapToken = payload?.snapToken;
+      // Step 2: Langsung panggil API untuk dapatkan token (Ganti logic handleMidtrans)
+      const payload = await createMidtransSnapTransaction(order.id);
+      const snapToken = payload?.snapToken;
+      console.log({ payload });
+      if (!snapToken) {
+        throw new Error("Midtrans payment token is not available.");
+      }
 
-//       if (!snapToken) {
-//         throw new Error("Midtrans payment token is not available.");
-//       }
+      // Step 3: Langsung panggil SDK Midtrans
+      // Kita "await" ini agar mutation tetap dalam status 'pending' selama popup terbuka
+      const result = await payWithMidtransSnap(snapToken);
 
-//       // Step 3: Langsung panggil SDK Midtrans
-//       // Kita "await" ini agar mutation tetap dalam status 'pending' selama popup terbuka
-//       // const result = await payWithMidtransSnap(snapToken);
+      return result;
+    },
+    onSuccess: (result, order) => {
+      toast.success("Payment session finished.");
 
-//       return result;
-//     },
-//     onSuccess: (result, order) => {
-//       // Logic setelah user berinteraksi (Berhasil bayar / Pending / Tutup Popup)
-//       toast.success("Payment session finished.");
-
-//       // Sinkronisasi data
-//       queryClient.invalidateQueries({ queryKey: ["order-detail", order?.id] });
-//     },
-//     onError: (err) => {
-//       toast.error(getErrorMessage(err, "Payment error."));
-//     },
-//   });
-// }
+      queryClient.invalidateQueries({ queryKey: ["order-detail", order?.id] });
+    },
+    onError: (err) => {
+      toast.error(getErrorMessage(err, "Payment error."));
+    },
+  });
+}
 
 export function useCancelOrder(orderId: string) {
   const queryClient = useQueryClient();

@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuthStore } from "@/app/stores/auth";
+import { DefaultImage } from "@/components/shared/default-image";
 import LinkButton from "@/components/shared/link-button";
 import { RatingStars } from "@/components/shared/rating-stars";
 import { renderStars } from "@/components/shared/render-start";
@@ -170,14 +171,19 @@ export default function ProductDetailPage() {
                   Sale
                 </span>
               )}
-              <Image
-                src={product.imageUrl}
-                alt={product.name}
-                width={500}
-                height={500}
-                priority
-                className="object-contain w-full h-full group-hover:scale-105 transition-transform duration-500"
-              />
+              {product.imageUrl ? (
+
+                <Image
+                  src={product.imageUrl}
+                  alt={product.name}
+                  width={500}
+                  height={500}
+                  priority
+                  className="object-contain w-full h-full group-hover:scale-105 transition-transform duration-500"
+                />
+              ) : (
+                <DefaultImage />
+              )}
             </div>
           </div>
         </div>

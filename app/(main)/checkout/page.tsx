@@ -10,7 +10,9 @@ import { useAddressesByUserQuery } from "@/lib/api/addresses";
 import { getErrorMessage } from "@/lib/api/fetcher";
 import { useCreateAddressMutation } from "@/lib/hooks/use-address";
 import { useCheckout } from "@/lib/hooks/use-checkout";
+import { useOrderPayment } from "@/lib/hooks/use-order";
 import { formatIDR } from "@/lib/utils";
+import { AddressFormValues } from "@/lib/validations/address-schema";
 import { motion, Variants } from "framer-motion";
 import { ChevronRight, ShoppingBag } from "lucide-react";
 import Image from "next/image";
@@ -41,6 +43,7 @@ export default function CheckoutPage() {
   const user = useAuthStore((s) => s.user);
   const items = useCartStore((s) => s.items);
   const clearCart = useCartStore((s) => s.clear);
+  const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
   const [isAuthHydrated, setIsAuthHydrated] = useState(false);
 
   useEffect(() => {
@@ -48,7 +51,7 @@ export default function CheckoutPage() {
   }, []);
 
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(
-    null,
+    null
   );
   const [showAddressModal, setShowAddressModal] = useState(false);
   const userId = user?.id ?? null;
@@ -58,7 +61,6 @@ export default function CheckoutPage() {
     isPending: isAddressLoading,
     error: addressErrorObj,
   } = useAddressesByUserQuery(userId, { pageSize: 50 });
-
   const addresses = addressList?.items ?? [];
   const addressError = addressErrorObj
     ? getErrorMessage(addressErrorObj, "Cannot load address.")
@@ -83,13 +85,13 @@ export default function CheckoutPage() {
 
   const subtotal = items.reduce((acc, it) => acc + it.price * it.qty, 0);
   const shipping = items.length > 0 ? 15000 : 0;
-  const voucher = 0;
+  const voucher = 0; // placeholder
   const grandTotal = subtotal + shipping - voucher;
-  const totalProducts = items.reduce((sum, item) => sum + item.qty, 0);
+  const totalBooks = items.reduce((sum, item) => sum + item.qty, 0);
 
   const createAddressMutation = useCreateAddressMutation(userId);
 
-  const handleAddAddress = async (values: any) => {
+  const handleAddAddress = async (values: AddressFormValues) => {
     if (!userId) {
       toast.error("User not found.");
       return;
@@ -97,8 +99,16 @@ export default function CheckoutPage() {
     await createAddressMutation.mutateAsync({ ...values, userId });
   };
 
+  // Hooks
+  const {
+    mutate: startPayment,
+    isPending: isPaying,
+    error: paymentError,
+  } = useOrderPayment();
   const { mutate: checkout, isPending: isCheckoutPending } = useCheckout();
-  const isBusy = isCheckoutPending;
+
+  // Gabungkan status loading
+  const isBusy = isCheckoutPending || isPaying;
 
   const handleCheckout = () => {
     if (items.length === 0 || !effectiveSelectedAddressId || isBusy) return;
@@ -115,11 +125,25 @@ export default function CheckoutPage() {
         onSuccess: (payload) => {
           const order = payload?.order;
           if (order) {
-            toast.success(`Order ${order.orderNumber} created!`);
-            router.push(`/account/orders/${order.id}`);
+            toast.success(
+              `Order ${order.orderNumber} created! Opening payment...`
+            );
+
+            // 🔥 LANJUT KE PEMBAYARAN
+            startPayment(order, {
+              onSuccess: () => {
+                // Setelah popup Midtrans ditutup/selesai, baru redirect
+                router.push(`/account/orders/${order.id}`);
+              },
+              onError: () => {
+                // Jika payment gagal, tetap redirect ke detail order
+                // agar user bisa klik "Retry Payment" di sana
+                router.push(`/account/orders/${order.id}`);
+              },
+            });
           }
         },
-      },
+      }
     );
   };
 
@@ -271,11 +295,10 @@ export default function CheckoutPage() {
                 {addresses.map((addr) => (
                   <label
                     key={addr.id}
-                    className={`group relative flex items-start gap-5 p-7 rounded-2xl cursor-pointer transition-all duration-300 border ${
-                      effectiveSelectedAddressId === addr.id
-                        ? "bg-white border-primary shadow-[0_20px_40px_rgba(37,99,235,0.08)] ring-1 ring-primary"
-                        : "bg-white border-slate-200/60 hover:border-slate-300 shadow-sm"
-                    }`}
+                    className={`group relative flex items-start gap-5 p-7 rounded-2xl cursor-pointer transition-all duration-300 border ${effectiveSelectedAddressId === addr.id
+                      ? "bg-white border-primary shadow-[0_20px_40px_rgba(37,99,235,0.08)] ring-1 ring-primary"
+                      : "bg-white border-slate-200/60 hover:border-slate-300 shadow-sm"
+                      }`}
                   >
                     <input
                       type="radio"
@@ -284,11 +307,10 @@ export default function CheckoutPage() {
                       onChange={() => setSelectedAddressId(addr.id)}
                     />
                     <div
-                      className={`mt-1 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
-                        effectiveSelectedAddressId === addr.id
-                          ? "border-primary bg-primary"
-                          : "border-slate-200"
-                      }`}
+                      className={`mt-1 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${effectiveSelectedAddressId === addr.id
+                        ? "border-primary bg-primary"
+                        : "border-slate-200"
+                        }`}
                     >
                       {effectiveSelectedAddressId === addr.id && (
                         <div className="w-2 h-2 bg-white rounded-full" />
@@ -348,11 +370,10 @@ export default function CheckoutPage() {
                   </div>
 
                   <Button
-                    className={`w-full h-20 rounded-[1.5rem] text-xl font-bold transition-all duration-500 shadow-2xl ${
-                      isBusy
-                        ? "bg-slate-100 text-slate-400"
-                        : "bg-primary hover:bg-primary/90 text-white shadow-blue-200 hover:scale-[1.02]"
-                    }`}
+                    className={`w-full h-20 rounded-[1.5rem] text-xl font-bold transition-all duration-500 shadow-2xl ${isBusy
+                      ? "bg-slate-100 text-slate-400"
+                      : "bg-primary hover:bg-primary/90 text-white shadow-blue-200 hover:scale-[1.02]"
+                      }`}
                     disabled={
                       items.length === 0 ||
                       !effectiveSelectedAddressId ||

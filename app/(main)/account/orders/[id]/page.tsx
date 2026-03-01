@@ -171,7 +171,7 @@ export default function OrderDetailPage() {
 
           {/* --- PENDING ACTION BANNER --- */}
           {statusKey === "PENDING" && (
-            <div className="bg-orange-50 border-2 border-orange-100 rounded-[2rem] p-6 flex flex-col md:flex-row items-center gap-6">
+            <div className="bg-orange-50 border-2 border-orange-100 rounded-2xl p-6 flex flex-col md:flex-row items-center gap-6">
               <div className="h-14 w-14 bg-orange-100 rounded-2xl flex items-center justify-center text-orange-600 shrink-0">
                 <AlertCircle size={28} />
               </div>
@@ -179,7 +179,7 @@ export default function OrderDetailPage() {
                 <h3 className="font-black text-orange-900 uppercase tracking-tight text-sm">
                   Payment Required
                 </h3>
-                <p className="text-orange-800/70 text-xs font-medium mt-1 leading-relaxed">
+                <p className="text-orange-800/80 text-xs font-medium mt-1 leading-relaxed">
                   Complete your payment to process this order. We're holding
                   your items for a limited time.
                 </p>

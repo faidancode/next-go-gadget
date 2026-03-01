@@ -12,7 +12,7 @@ export type CartItem = {
   productId: string;
   productName: string;
   productSlug: string;
-  productCoverUrl: string;
+  productImageUrl: string;
   categoryId: string;
   quantity: number;
   priceCentsAtAdd: number;

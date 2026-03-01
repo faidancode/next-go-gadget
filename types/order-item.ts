@@ -3,7 +3,7 @@ export type OrderItem = {
   orderId: string;
   productId: string;
   productName: string;
-  productCoverUrl: string;
+  productImageUrl: string;
   productSlug: string;
   nameSnapshot: string;
   unitPrice: number;

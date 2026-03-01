@@ -13,7 +13,7 @@ const reviewSchema = z.object({
   productId: z.string().optional().nullable(),
   productSlug: z.string().optional().nullable(),
   productName: z.string().optional().nullable(),
-  productCoverUrl: z.string().optional().nullable(),
+  productImageUrl: z.string().optional().nullable(),
   rating: z.number(),
   title: z.string().optional().nullable(),
   comment: z.string().optional().nullable(),

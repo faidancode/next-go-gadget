@@ -7,7 +7,7 @@ export type Review = {
   productId: string;
   productSlug?: string | null;
   productName?: string | null;
-  productCoverUrl?: string | null;
+  productImageUrl?: string | null;
   rating: number;
   title?: string | null;
   comment?: string | null;

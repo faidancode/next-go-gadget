@@ -98,7 +98,7 @@ export default function AccountLayout({
 
               {/* Navigation Menu */}
               <nav className="flex flex-col gap-1">
-                <p className="px-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-4">
+                <p className="px-4 text-[10px] font-black uppercase tracking-widest text-slate-400 mb-4">
                   Account Menu
                 </p>
                 {items.map((it) => {
@@ -112,7 +112,7 @@ export default function AccountLayout({
                       key={it.href}
                       href={it.href}
                       className={cn(
-                        "group flex items-center gap-4 px-4 py-4 rounded-2xl text-sm font-bold transition-all duration-200",
+                        "group flex items-center gap-4 px-4 py-4 rounded-lg text-sm font-bold transition-all duration-200",
                         isActive
                           ? "bg-emerald-50 text-primary shadow-sm shadow-emerald-100/50"
                           : "text-slate-500 hover:bg-slate-50 hover:text-slate-900",
@@ -146,7 +146,7 @@ export default function AccountLayout({
 
           {/* --- MAIN CONTENT AREA --- */}
           <main className="lg:col-span-9 min-h-125">
-            <div className="bg-white/50 backdrop-blur-sm rounded-3xl p-4 md:p-10 border border-slate-100">
+            <div className="bg-white/50 backdrop-blur-sm rounded-3xl p-4 md:p-10 border border-slate-200/70">
               {children}
             </div>
           </main>

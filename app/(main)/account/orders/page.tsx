@@ -25,6 +25,8 @@ import { getErrorMessage } from "@/lib/api/fetcher";
 import { userOrders } from "@/lib/hooks/use-order";
 import { formatIDR, cn } from "@/lib/utils";
 import { Order } from "@/types/order";
+import SmallLogo from "@/components/shared/small-logo";
+import Image from "next/image";
 
 const STATUS_CONFIG: Record<string, { label: string; class: string }> = {
   PENDING: {
@@ -75,7 +77,7 @@ function OrderCard({ order }: { order: Order }) {
   return (
     <Link
       href={`/account/orders/${order.id}`}
-      className="group block bg-white rounded-[2rem] border border-slate-100 p-6 transition-all duration-300 hover:shadow-2xl hover:shadow-slate-200/50 hover:border-primary/20"
+      className="group block bg-white rounded-2xl border border-slate-200/70 p-6 transition-all duration-300 hover:shadow-2xl hover:shadow-slate-200/50 hover:border-primary/20"
     >
       <div className="flex flex-col gap-6">
         {/* Top: Info & Status */}
@@ -107,8 +109,18 @@ function OrderCard({ order }: { order: Order }) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             {/* Placeholder for Product Image - adapt to your logic */}
-            <div className="h-16 w-16 bg-slate-50 rounded-2xl flex items-center justify-center border border-slate-100 text-slate-300">
-              <Box size={24} />
+            <div className="h-16 w-16 bg-slate-50 rounded-2xl flex items-center justify-center border border-slate-200/70 text-slate-300">
+              {firstItem?.productImageUrl ? (
+                <Image
+                  src={firstItem.productImageUrl}
+                  alt={firstItem.nameSnapshot}
+                  width={64}
+                  height={72}
+                  className="object-cover rounded-2xl group-hover:scale-110 transition-transform duration-500"
+                />
+              ) : (
+                <SmallLogo className="rounded-2xl" />
+              )}
             </div>
             <div>
               <p className="text-sm font-bold text-slate-800 line-clamp-1">
@@ -119,7 +131,7 @@ function OrderCard({ order }: { order: Order }) {
                 {formatIDR(firstItem?.unitPrice || 0)}
               </p>
               {remainingCount > 0 && (
-                <p className="text-[10px] font-bold text-primary mt-1 uppercase tracking-tight">
+                <p className="text-[11px] font-bold text-primary mt-1 tracking-tight">
                   + {remainingCount} other product
                   {remainingCount > 1 ? "s" : ""}
                 </p>
@@ -185,7 +197,7 @@ export default function OrdersPage() {
 
   if (!user) {
     return (
-      <div className="min-h-[40vh] flex flex-col items-center justify-center bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-100">
+      <div className="min-h-[40vh] flex flex-col items-center justify-center bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200/70">
         <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">
           Please login to view orders.
         </p>
@@ -207,7 +219,7 @@ export default function OrdersPage() {
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-full border border-slate-100 min-w-45">
+          <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-full border border-slate-200/70 min-w-45">
             <ArrowUpDown size={14} className="text-slate-400" />
             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
               Status:
@@ -218,7 +230,7 @@ export default function OrdersPage() {
               </SelectTrigger>
               <SelectContent
                 align="end"
-                className="rounded-2xl shadow-xl border-slate-100"
+                className="rounded-2xl shadow-xl border-slate-200/70"
               >
                 {STATUS_OPTIONS.map((opt) => (
                   <SelectItem
@@ -252,7 +264,7 @@ export default function OrdersPage() {
             </p>
           </div>
         ) : orders.length === 0 ? (
-          <div className="py-24 bg-slate-50/50 rounded-[3rem] border-2 border-dashed border-slate-100 flex flex-col items-center">
+          <div className="py-24 bg-slate-50/50 rounded-[3rem] border-2 border-dashed border-slate-200/70 flex flex-col items-center">
             <div className="h-16 w-16 bg-white rounded-full flex items-center justify-center shadow-sm mb-4">
               <Package size={24} className="text-slate-200" />
             </div>

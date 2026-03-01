@@ -193,7 +193,7 @@ export default function OrderDetailPage() {
           )}
 
           {/* --- ITEMS CARD --- */}
-          <div className="bg-white border border-slate-100 rounded-2xl p-8">
+          <div className="bg-white border border-slate-200/70 rounded-2xl p-8">
             <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-6 flex items-center gap-2">
               <Box size={14} /> Purchased Items
             </h3>
@@ -205,12 +205,12 @@ export default function OrderDetailPage() {
                 >
                   <Link
                     href={`/products/${item.productSlug}`}
-                    className="shrink-0 relative overflow-hidden rounded-2xl border border-slate-100"
+                    className="shrink-0 relative overflow-hidden rounded-2xl border border-slate-200/70"
                   >
-                    {item.productCoverUrl ? (
+                    {item.productImageUrl ? (
                       <Image
-                        src={item.productCoverUrl}
-                        alt={item.productName}
+                        src={item.productImageUrl}
+                        alt={item.nameSnapshot}
                         width={64}
                         height={72}
                         className="object-cover group-hover:scale-110 transition-transform duration-500"
@@ -249,7 +249,7 @@ export default function OrderDetailPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* --- DELIVERY INFO --- */}
-            <div className="bg-white border border-slate-100 rounded-2xl p-8">
+            <div className="bg-white border border-slate-200/70 rounded-2xl p-8">
               <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-6 flex items-center gap-2">
                 <Truck size={14} /> Shipping Info
               </h3>
@@ -274,7 +274,7 @@ export default function OrderDetailPage() {
             </div>
 
             {/* --- PAYMENT DETAIL --- */}
-            <div className="bg-white border border-slate-100 rounded-2xl p-8">
+            <div className="bg-white border border-slate-200/70 rounded-2xl p-8">
               <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-6 flex items-center gap-2">
                 <CreditCard size={14} /> Payment Detail
               </h3>
@@ -304,7 +304,7 @@ export default function OrderDetailPage() {
                   </span>
                 </div>
                 <div className="flex justify-between items-center pt-2">
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-900">
+                  <span className="font-black uppercase tracking-widest text-slate-900">
                     Total
                   </span>
                   <span className="text-xl font-black text-primary tracking-tighter">

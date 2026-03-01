@@ -41,14 +41,13 @@ function ReviewCard({ review }: { review: ReviewListItem }) {
   return (
     <Link
       href={review.productSlug ? `/products/${review.productSlug}` : "#"}
-      className={`block rounded-lg border  p-4 gap-3 ${
-        review.productSlug ? "hover:border-primary transition-colors" : ""
-      }`}
+      className={`block rounded-lg border  p-4 gap-3 ${review.productSlug ? "hover:border-primary transition-colors" : ""
+        }`}
     >
       <div className="flex gap-3">
-        {review.productCoverUrl ? (
+        {review.productImageUrl ? (
           <img
-            src={review.productCoverUrl}
+            src={review.productImageUrl}
             alt={review.productName ?? "product cover"}
             className="w-16 h-24 rounded-lg bg-background object-cover"
           />

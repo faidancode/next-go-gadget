@@ -5,7 +5,7 @@ export const reviewApiSchema = z.object({
   productId: z.string().nullable().optional(),
   productSlug: z.string().nullable().optional(),
   productName: z.string().nullable().optional(),
-  productCoverUrl: z.string().nullable().optional(),
+  productImageUrl: z.string().nullable().optional(),
   rating: z.number(),
   title: z.string().nullable().optional(),
   comment: z.string().nullable().optional(),

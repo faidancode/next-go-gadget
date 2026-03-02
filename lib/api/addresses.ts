@@ -21,7 +21,7 @@ export async function listAddressesByUser(
 
   const query = buildQueryString({
     page: params?.page,
-    pageSize: params?.pageSize,
+    limit: params?.limit,
     search: params?.search,
   });
 
@@ -108,10 +108,10 @@ export function useAddressesByUserQuery(
       userId
         ? listAddressesByUser(userId, params)
         : Promise.resolve({
-            items: [],
-            meta: {},
-            raw: null,
-          }),
+          items: [],
+          meta: {},
+          raw: null,
+        }),
     enabled: Boolean(userId),
     ...options,
   });

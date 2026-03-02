@@ -50,7 +50,7 @@ export default function AddressPage() {
       try {
         const result = await listAddressesByUser(targetUserId, {
           page: pageToLoad,
-          pageSize: PAGE_SIZE,
+          limit: PAGE_SIZE,
         });
         setAddresses((prev) => {
           if (mode === "append") {

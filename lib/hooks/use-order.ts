@@ -37,7 +37,7 @@ export function userOrders(
       }
       return listOrdersByUser(userId, {
         page: pageParam,
-        pageSize: 12,
+        limit: 12,
         status: statusFilter || undefined,
       });
     },

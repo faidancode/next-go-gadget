@@ -1,25 +1,20 @@
 "use client";
 
 import {
-  Lock,
   Minus,
   Plus,
   Shield,
   ShoppingBag,
   Trash,
   Trash2,
-  UserIcon,
+  UserIcon
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 
 import { useAuthStore } from "@/app/stores/auth";
-import type { CartItem } from "@/app/stores/cart";
 import { useCartStore } from "@/app/stores/cart";
-import { CoverPlaceholder } from "@/components/shared/cover-placeholder";
-import { EmptyState } from "@/components/shared/empty-state";
-import { Title } from "@/components/shared/title";
 import { Button } from "@/components/ui/button";
 import {
   useDecrementCartItem,
@@ -27,7 +22,6 @@ import {
   useRemoveCartItem,
   useUpdateCartQty,
 } from "@/lib/hooks/use-cart";
-import { Separator } from "@/components/ui/separator";
 
 function formatIDR(value: number) {
   try {

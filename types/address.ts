@@ -3,7 +3,7 @@ import { ApiEnvelope } from "./api";
 
 export type AddressListParams = {
   page?: number;
-  pageSize?: number;
+  limit?: number;
   search?: string;
 };
 

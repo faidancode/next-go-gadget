@@ -103,7 +103,7 @@ export async function checkoutOrder(
 
 export async function listOrdersByUser(
   userId: string,
-  params?: { page?: number; pageSize?: number; status?: string },
+  params?: { page?: number; limit?: number; status?: string },
 ): Promise<ListResult<Order>> {
   if (!userId) {
     return { items: [], meta: {}, raw: null };
@@ -116,7 +116,7 @@ export async function listOrdersByUser(
 
   const query = buildQueryString({
     page: params?.page,
-    pageSize: params?.pageSize,
+    limit: params?.limit,
     status: statusQuery,
   });
   const search = query ? `?${query}` : "";

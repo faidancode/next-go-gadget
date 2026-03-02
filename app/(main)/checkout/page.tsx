@@ -60,7 +60,7 @@ export default function CheckoutPage() {
     data: addressList,
     isPending: isAddressLoading,
     error: addressErrorObj,
-  } = useAddressesByUserQuery(userId, { pageSize: 50 });
+  } = useAddressesByUserQuery(userId, { limit: 50 });
   const addresses = addressList?.items ?? [];
   const addressError = addressErrorObj
     ? getErrorMessage(addressErrorObj, "Cannot load address.")

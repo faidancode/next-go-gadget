@@ -109,7 +109,7 @@ export default function OrderDetailPage() {
   const badgeStyle = STATUS_STYLES[statusKey] ?? " bg-gray-100 text-gray-800";
 
   return (
-    <div className="max-w-3xl mx-auto space-y-8 pb-10">
+    <div className="space-y-4 pb-10">
       {/* --- NAVIGATION --- */}
       <div className="flex items-center justify-between">
         <Button
@@ -140,10 +140,10 @@ export default function OrderDetailPage() {
       )}
 
       {order && (
-        <div className="space-y-6">
+        <div className="space-y-4">
           {/* --- HEADER CARD: ORDER INFO --- */}
-          <div className="bg-slate-900 rounded-2xl p-8 text-white shadow-2xl shadow-slate-200 relative overflow-hidden">
-            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="bg-slate-900 rounded-2xl px-8 py-4 text-white shadow-2xl shadow-slate-200 relative overflow-hidden">
+            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
                 <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-2">
                   Transaction Details
@@ -171,7 +171,7 @@ export default function OrderDetailPage() {
 
           {/* --- PENDING ACTION BANNER --- */}
           {statusKey === "PENDING" && (
-            <div className="bg-orange-50 border-2 border-orange-100 rounded-2xl p-6 flex flex-col md:flex-row items-center gap-6">
+            <div className="bg-orange-50 border-2 border-orange-100 rounded-2xl px-8 py-4 flex flex-col md:flex-row items-center gap-6">
               <div className="h-14 w-14 bg-orange-100 rounded-2xl flex items-center justify-center text-orange-600 shrink-0">
                 <AlertCircle size={28} />
               </div>
@@ -249,65 +249,85 @@ export default function OrderDetailPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* --- DELIVERY INFO --- */}
-            <div className="bg-white border border-slate-200/70 rounded-2xl p-8">
+            <div className="bg-white border border-slate-200/70 rounded-2xl p-8 shadow-sm">
               <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-6 flex items-center gap-2">
-                <Truck size={14} /> Shipping Info
+                <Truck size={14} className="text-primary" /> Shipping Info
               </h3>
-              <div className="space-y-4">
+              <div className="space-y-6">
+                {/* Tracking Number Section */}
                 <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-300">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
                     Tracking Number
                   </p>
-                  <p className="text-sm font-bold text-slate-800 mt-1 font-mono">
+                  <p className="text-sm font-bold text-slate-800 mt-1 font-mono bg-slate-50 px-3 py-2 rounded-xl border border-slate-100 inline-block">
                     {order.receiptNo || "Not Available Yet"}
                   </p>
                 </div>
-                <div className="pt-4 border-t border-slate-50">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-300">
+
+                <div className="pt-6 border-t border-slate-100">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">
                     Delivery Address
                   </p>
-                  <p className="text-xs text-slate-600 mt-2 leading-relaxed font-medium">
-                    {addressText || "-"}
-                  </p>
+
+                  {/* Recipient Details */}
+                  <div className="mb-3">
+                    <p className="text-sm font-black text-slate-900">{order.address.recipientName}</p>
+                    <p className="text-xs font-medium text-slate-500">{order.address.recipientPhone}</p>
+                  </div>
+
+                  {/* Full Address String */}
+                  <div className="bg-slate-50/50 p-4 rounded-2xl border border-dashed border-slate-200">
+                    <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                      <span className="inline-block px-2 py-0.5 rounded bg-primary/10 text-primary text-[9px] font-black uppercase mr-2 mb-1">
+                        {order.address.label}
+                      </span>
+                      <br />
+                      {order.address.street}, {order.address.subdistrict}, {order.address.district}
+                      <br />
+                      {order.address.city}, {order.address.province}
+                      <br />
+                      {order.address.postalCode}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* --- PAYMENT DETAIL --- */}
-            <div className="bg-white border border-slate-200/70 rounded-2xl p-8">
+            <div className="bg-white border border-slate-200/70 rounded-2xl p-8 shadow-sm">
               <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-6 flex items-center gap-2">
-                <CreditCard size={14} /> Payment Detail
+                <CreditCard size={14} className="text-primary" /> Payment Detail
               </h3>
-              <div className="space-y-3">
-                <div className="flex justify-between text-xs">
-                  <span className="text-slate-400 font-bold uppercase tracking-wider">
+              <div className="space-y-4">
+                {/* Method */}
+                <div className="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-100">
+                  <span className="text-[10px] text-slate-400 font-black uppercase tracking-wider">
                     Method
                   </span>
-                  <span className="font-black text-slate-900 uppercase tracking-tighter">
+                  <span className="text-xs font-black text-slate-900 uppercase tracking-tight">
                     {order.paymentMethod || "-"}
                   </span>
                 </div>
-                <div className="flex justify-between text-xs">
-                  <span className="text-slate-400 font-bold uppercase tracking-wider">
-                    Subtotal
-                  </span>
-                  <span className="font-bold text-slate-700">
-                    {formatIDR(order.subtotalPrice)}
-                  </span>
+
+                {/* Breakdowns */}
+                <div className="space-y-3 px-1">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-slate-400 font-bold uppercase tracking-wider">Subtotal</span>
+                    <span className="font-bold text-slate-700">{formatIDR(order.subtotalPrice)}</span>
+                  </div>
+                  <div className="flex justify-between text-xs pb-4 border-b border-slate-100">
+                    <span className="text-slate-400 font-bold uppercase tracking-wider">Shipping Fee</span>
+                    <span className="font-bold text-slate-700">{formatIDR(order.shippingPrice)}</span>
+                  </div>
                 </div>
-                <div className="flex justify-between text-xs pb-4 border-b border-slate-50">
-                  <span className="text-slate-400 font-bold uppercase tracking-wider">
-                    Shipping
-                  </span>
-                  <span className="font-bold text-slate-700">
-                    {formatIDR(order.shippingPrice)}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center pt-2">
-                  <span className="font-black uppercase tracking-widest text-slate-900">
-                    Total
-                  </span>
-                  <span className="text-xl font-black text-primary tracking-tighter">
+
+                {/* Total Amount */}
+                <div className="flex justify-between items-center pt-2 px-1">
+                  <div>
+                    <p className="font-black uppercase tracking-[0.2em] text-slate-900 text-xs">Total Bill</p>
+                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">Tax included (if any)</p>
+                  </div>
+                  <span className="text-2xl font-black text-primary tracking-tighter">
                     {formatIDR(order.totalPrice)}
                   </span>
                 </div>

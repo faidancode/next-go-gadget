@@ -212,7 +212,7 @@ export function AccountView({ user }: { user: any | null }) {
               </div>
             </div>
           </div>
-          <div className="mt-6 p-4 rounded-2xl bg-slate-50 border border-slate-100">
+          <div className="mt-6 p-4 rounded-2xl bg-cyan-50 border border-cyan-100">
             <p className="text-xs text-slate-500 leading-relaxed font-medium">
               <span className="font-bold text-amber-600">Tip:</span> Leave the
               password fields blank if you do not wish to change your current

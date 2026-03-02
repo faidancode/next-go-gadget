@@ -32,6 +32,7 @@ export type Order = {
   paymentStatus: string;
 
   addressSnapshot: OrderAddressSnapshot;
+  address: OrderAddressSnapshot;
   subtotalPrice: number;
   discount: number;
   shippingPrice: number;

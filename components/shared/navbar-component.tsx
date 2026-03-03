@@ -155,7 +155,7 @@ export function Navbar() {
                   onSelect={handleLogout}
                   className="rounded-xl py-3 cursor-pointer focus:bg-red-50 focus:text-red-600 font-medium"
                 >
-                  Logout
+                  Sign Out
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

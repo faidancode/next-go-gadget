@@ -38,10 +38,10 @@ function LoginPageContent() {
 
   const emailNotConfirmedMessage = emailNotConfirmed
     ? {
-        message:
-          "Your email is not confirmed yet. Please verify your email to continue. If you haven't received it or the link has expired, click the link below. ",
-        variant: "warning" as const,
-      }
+      message:
+        "Your email is not confirmed yet. Please verify your email to continue. If you haven't received it or the link has expired, click the link below. ",
+      variant: "warning" as const,
+    }
     : null;
 
   type LoginMessageConfig = {
@@ -110,7 +110,7 @@ function LoginPageContent() {
       onError: (error) => {
         const code = getErrorCode(error);
         console.log({ code });
-        if (code === "EMAIL_NOT_CONFIRMED") {
+        if (code === "EMAIL_NOT_VERIFIED") {
           setEmailNotConfirmed(true);
           setServerError(null);
           return;

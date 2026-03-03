@@ -20,7 +20,7 @@ import {
   resendEmailSchema,
 } from "@/lib/validations/auth-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { AlertCircle, ArrowLeft, CheckCircle2, Loader2, Mail } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
@@ -80,27 +80,39 @@ function ResendEmailContent() {
   };
 
   return (
-    <div className="flex min-h-svh items-center justify-center px-4">
-      <Card className="border-border/40 bg-card/60 backdrop-blur-sm shadow-xl">
-        <CardHeader className="space-y-3 pb-6 text-center">
-          <Logo />
-          <div className="space-y-1">
-            <CardTitle className="text-2xl font-bold tracking-tight">
+    <div className="flex min-h-svh items-center justify-center px-4 bg-[radial-gradient(circle_at_top,var(--tw-gradient-stops))] from-slate-50 via-white to-white">
+      <Card className="w-full max-w-md border-slate-200/80 bg-white/70 backdrop-blur-xl shadow-2xl shadow-slate-200/50 rounded-[2rem] overflow-hidden">
+        {/* Visual Accent di bagian atas card */}
+        <div className="h-2 bg-linear-to-r from-primary/20 via-primary to-primary/20" />
+
+        <CardHeader className="space-y-4 pb-6 text-center pt-10">
+          <div className="flex justify-center mb-2">
+            <div className="p-3 bg-primary/5 rounded-2xl">
+              <Logo />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <CardTitle className="text-2xl font-black uppercase tracking-tighter text-slate-900">
               Verify your email
             </CardTitle>
-            <CardDescription className="text-muted-foreground">
-              We&apos;ll send a new activation link to your inbox.
+            <CardDescription className="text-xs font-bold uppercase tracking-widest text-slate-400 leading-relaxed">
+              We&apos;ll send a new activation link <br /> to your inbox.
             </CardDescription>
           </div>
         </CardHeader>
 
-        <CardContent className="grid gap-5">
+        <CardContent className="grid gap-6 px-8 pb-10">
           {alert && (
             <Alert
               variant={alert.variant}
-              className="animate-in fade-in zoom-in duration-300"
+              className={cn(
+                "animate-in fade-in zoom-in duration-300 rounded-xl border-none",
+                alert.variant === "success" ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"
+              )}
             >
-              {alert.message}
+              <div className="flex items-center gap-2">
+                <span className=" capitalize tracking-tight">{alert.message}</span>
+              </div>
             </Alert>
           )}
 
@@ -113,25 +125,28 @@ function ResendEmailContent() {
               <Label
                 htmlFor="email"
                 className={cn(
-                  form.formState.errors.email && "text-destructive",
+                  "text-[10px] font-black uppercase tracking-[0.2em] ml-1 transition-colors",
+                  form.formState.errors.email ? "text-destructive" : "text-slate-400"
                 )}
               >
                 Email Address
               </Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="name@gadgetstore.com"
-                className={cn(
-                  "bg-background/50",
-                  form.formState.errors.email &&
-                    "border-destructive focus-visible:ring-destructive",
-                )}
-                disabled={isPending}
-                {...form.register("email")}
-              />
+              <div className="relative group">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-primary transition-colors" size={18} />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="name@gadgetstore.com"
+                  className={cn(
+                    "pl-12 h-12 rounded-2xl border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-4 focus:ring-primary/5 transition-all text-sm font-bold",
+                    form.formState.errors.email && "border-destructive focus-visible:ring-destructive/10"
+                  )}
+                  disabled={isPending}
+                  {...form.register("email")}
+                />
+              </div>
               {form.formState.errors.email?.message && (
-                <p className="text-[0.7rem] font-medium text-destructive">
+                <p className="text-[10px] font-black uppercase tracking-tight text-destructive ml-1">
                   {form.formState.errors.email.message}
                 </p>
               )}
@@ -139,30 +154,32 @@ function ResendEmailContent() {
 
             <Button
               type="submit"
-              className="w-full mt-2 shadow-lg shadow-primary/20"
+              className="w-full h-12 mt-2 rounded-2xl bg-slate-900 hover:bg-black shadow-xl shadow-slate-200 font-black uppercase text-[11px] tracking-[0.2em] transition-all active:scale-[0.98]"
               disabled={isPending}
             >
               {isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Sending link...
+                  Processing...
                 </>
               ) : (
-                "Resend Verification Email"
+                "Resend Link"
               )}
             </Button>
           </form>
 
-          <div className="space-y-4">
-            <p className="text-center text-[0.8rem] leading-relaxed text-muted-foreground italic">
-              Didn&apos;t receive the email? Please check your{" "}
-              <strong>spam folder</strong> or try again in a few minutes.
-            </p>
+          <div className="space-y-6">
+            <div className="p-4 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+              <p className="text-center text-[10px] leading-relaxed text-slate-400 font-bold uppercase tracking-wider">
+                Didn&apos;t receive the email? <br />
+                Check your <span className="text-slate-900">spam folder</span> or try again.
+              </p>
+            </div>
 
-            <div className="flex justify-center border-t border-border/40 pt-6">
+            <div className="flex justify-center border-t border-slate-100 pt-6">
               <Link
                 href="/login"
-                className="group inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-all"
+                className="group inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-primary transition-all"
               >
                 <ArrowLeft
                   size={14}

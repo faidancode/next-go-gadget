@@ -36,7 +36,7 @@ export function Alert({
   return (
     <div
       className={cn(
-        "flex items-center gap-2 border-l-4 px-3 py-2 text-sm",
+        "flex items-center gap-2 border px-3 py-2 text-sm",
         VARIANT_STYLES[variant],
         className
       )}

@@ -51,7 +51,7 @@ export function RegisterForm({
       {...props}
     >
       <Card className="border-slate-200/80 bg-white/80 backdrop-blur-xl shadow-2xl shadow-emerald-950/5 rounded-[2.5rem] overflow-hidden">
-        <CardHeader className="space-y-4 pb-6 text-center pt-10">
+        <CardHeader className="space-y-4 pb-1 text-center pt-3">
           <div className="flex justify-center mb-2">
             <Logo />
           </div>
@@ -71,7 +71,7 @@ export function RegisterForm({
               variant="error"
               className="rounded-2xl animate-in fade-in zoom-in-95"
             >
-                {serverError}
+              {serverError}
             </Alert>
           )}
 
@@ -80,64 +80,61 @@ export function RegisterForm({
             className="grid gap-5"
             noValidate
           >
-            {/* Row for First Name & Last Name */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label
-                  htmlFor="firstName"
-                  className={cn(
-                    "text-xs font-black uppercase tracking-widest ml-1",
-                    errors.firstName ? "text-red-500" : "text-slate-400",
-                  )}
-                >
-                  First Name
-                </Label>
-                <Input
-                  id="firstName"
-                  placeholder="John"
-                  className={cn(
-                    "h-12 rounded-2xl bg-slate-50 border-slate-200 focus:bg-white transition-all",
-                    errors.firstName &&
-                      "border-red-500 focus-visible:ring-red-500",
-                  )}
-                  disabled={isLoading}
-                  {...register("firstName")}
-                />
-                {errors.firstName?.message && (
-                  <p className="text-[10px] font-bold text-red-500 ml-1 uppercase">
-                    {errors.firstName.message}
-                  </p>
-                )}
-              </div>
-              <div className="grid gap-2">
-                <Label
-                  htmlFor="lastName"
-                  className={cn(
-                    "text-xs font-black uppercase tracking-widest ml-1",
-                    errors.lastName ? "text-red-500" : "text-slate-400",
-                  )}
-                >
-                  Last Name
-                </Label>
-                <Input
-                  id="lastName"
-                  placeholder="Doe"
-                  className={cn(
-                    "h-12 rounded-2xl bg-slate-50 border-slate-200 focus:bg-white transition-all",
-                    errors.lastName &&
-                      "border-red-500 focus-visible:ring-red-500",
-                  )}
-                  disabled={isLoading}
-                  {...register("lastName")}
-                />
-                {errors.lastName?.message && (
-                  <p className="text-[10px] font-bold text-red-500 ml-1 uppercase">
-                    {errors.lastName.message}
-                  </p>
-                )}
-              </div>
-            </div>
 
+            <div className="grid gap-2">
+              <Label
+                htmlFor="name"
+                className={cn(
+                  "text-xs font-black uppercase tracking-widest ml-1",
+                  errors.name ? "text-red-500" : "text-slate-400",
+                )}
+              >
+                Full Name
+              </Label>
+              <Input
+                id="name"
+                type="text"
+                placeholder="John Doe"
+                className={cn(
+                  "h-12 rounded-2xl bg-slate-50 border-slate-200 focus:bg-white placeholder:text-slate-300 placeholder:font-light transition-all",
+                  errors.name && "border-red-500 focus-visible:ring-red-500",
+                )}
+                disabled={isLoading}
+                {...register("name")}
+              />
+              {errors.name?.message && (
+                <p className="text-[10px] font-bold text-red-500 ml-1 uppercase">
+                  {errors.name.message}
+                </p>
+              )}
+            </div>
+            <div className="grid gap-2">
+              <Label
+                htmlFor="phone"
+                className={cn(
+                  "text-xs font-black uppercase tracking-widest ml-1",
+                  errors.email ? "text-red-500" : "text-slate-400",
+                )}
+              >
+                Handphone
+              </Label>
+              <Input
+                id="phone"
+                type="text"
+                placeholder="ex: 6282112345678"
+                className={cn(
+                  "h-12 rounded-2xl bg-slate-50 border-slate-200 focus:bg-white placeholder:text-slate-300 placeholder:font-light transition-all",
+                  errors.phone && "border-red-500 focus-visible:ring-red-500",
+                )}
+                disabled={isLoading}
+                {...register("phone")}
+              />
+              {errors.phone?.message && (
+                <p className="text-[10px] font-bold text-red-500 ml-1 uppercase">
+                  {errors.phone.message}
+                </p>
+              )}
+            </div>
             {/* Email Field */}
             <div className="grid gap-2">
               <Label
@@ -154,7 +151,7 @@ export function RegisterForm({
                 type="email"
                 placeholder="m@example.com"
                 className={cn(
-                  "h-12 rounded-2xl bg-slate-50 border-slate-200 focus:bg-white transition-all",
+                  "h-12 rounded-2xl bg-slate-50 border-slate-200 focus:bg-white placeholder:text-slate-300 placeholder:font-light transition-all",
                   errors.email && "border-red-500 focus-visible:ring-red-500",
                 )}
                 disabled={isLoading}
@@ -185,7 +182,7 @@ export function RegisterForm({
                   className={cn(
                     "h-12 rounded-2xl bg-slate-50 border-slate-200 pr-11 focus:bg-white transition-all",
                     errors.password &&
-                      "border-red-500 focus-visible:ring-red-500",
+                    "border-red-500 focus-visible:ring-red-500",
                   )}
                   disabled={isLoading}
                   {...register("password")}
@@ -224,7 +221,7 @@ export function RegisterForm({
                 className={cn(
                   "h-12 rounded-2xl bg-slate-50 border-slate-200 focus:bg-white transition-all",
                   errors.passwordConfirmation &&
-                    "border-red-500 focus-visible:ring-red-500",
+                  "border-red-500 focus-visible:ring-red-500",
                 )}
                 disabled={isLoading}
                 {...register("passwordConfirmation")}

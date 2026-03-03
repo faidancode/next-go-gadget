@@ -6,6 +6,7 @@ import { createJSONStorage, persist } from "zustand/middleware";
 export type User = {
   id: string;
   name: string;
+  phone: string | null | undefined;
   email: string;
   role: string;
 };

@@ -13,17 +13,12 @@ import {
   useUpdateCustomerProfile,
 } from "@/lib/api/customers";
 import { useState } from "react";
-import { Eye, EyeOff, Lock, Mail, ShieldCheck, ShieldUser } from "lucide-react";
+import { Eye, EyeOff, Lock, Mail, Phone, ShieldCheck, ShieldUser, UserIcon } from "lucide-react";
 
 export function AccountView({ user }: { user: any | null }) {
   const login = useAuthStore((s) => s.login);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  // Split name for initial values
-  const nameParts = user?.name?.split(" ") || ["", ""];
-  const firstName = nameParts[0];
-  const lastName = nameParts.slice(1).join(" ");
 
   const {
     register,
@@ -31,10 +26,10 @@ export function AccountView({ user }: { user: any | null }) {
     formState: { errors },
     reset,
   } = useForm<any>({
-    // Pastikan schema Zod Anda juga diupdate untuk menerima firstName & lastName
+    // Sekarang menggunakan 'name' dan 'phone' secara langsung
     defaultValues: {
-      firstName: firstName,
-      lastName: lastName,
+      name: user?.name || "",
+      phone: user?.phone || "",
       password: "",
       confirmPassword: "",
     },
@@ -48,23 +43,22 @@ export function AccountView({ user }: { user: any | null }) {
       return;
     }
 
-    const fullName = `${values.firstName} ${values.lastName}`.trim();
-
     try {
       const updated = await updateProfileMutation.mutateAsync({
         ...values,
-        name: fullName, // Kirim ke API sebagai satu string 'name'
+        // values sudah berisi 'name' dan 'phone' dari register
       });
 
       login({
         ...user,
-        name: fullName,
+        name: values.name,
+        phone: values.phone,
         email: updated?.email ?? user.email,
       });
 
       reset({
-        firstName: values.firstName,
-        lastName: values.lastName,
+        name: values.name,
+        phone: values.phone,
         password: "",
         confirmPassword: "",
       });
@@ -98,29 +92,46 @@ export function AccountView({ user }: { user: any | null }) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">
-                First Name
+                Full Name
               </label>
-              <Input
-                {...register("firstName")}
-                placeholder="John"
-                className="h-12 rounded-xl bg-slate-50 border-none focus:ring-2 focus:ring-primary/20 font-medium"
-              />
-              {errors.firstName?.message && (
+              <div className="relative">
+
+                <Input
+                  {...register("name")}
+                  placeholder="John Doe"
+                  className="h-12 rounded-xl bg-slate-50 border-none focus:ring-2 focus:ring-primary/20 font-medium pl-10" />
+                <UserIcon
+                  size={16}
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+                />
+              </div>
+              {errors.name?.message && (
                 <p className="text-[10px] font-bold text-red-500 ml-1 uppercase">
-                  {String(errors.firstName.message)}
+                  {String(errors.name.message)}
                 </p>
               )}
             </div>
 
             <div className="space-y-2">
               <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">
-                Last Name
+                Phone Number
               </label>
-              <Input
-                {...register("lastName")}
-                placeholder="Doe"
-                className="h-12 rounded-xl bg-slate-50 border-none focus:ring-2 focus:ring-primary/20 font-medium"
-              />
+              <div className="relative">
+                <Input
+                  {...register("phone")}
+                  placeholder="08123456789"
+                  className="h-12 rounded-xl bg-slate-50 border-none focus:ring-2 focus:ring-primary/20 font-medium pl-10"
+                />
+                <Phone
+                  size={16}
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+                />
+              </div>
+              {errors.phone?.message && (
+                <p className="text-[10px] font-bold text-red-500 ml-1 uppercase">
+                  {String(errors.phone.message)}
+                </p>
+              )}
             </div>
 
             <div className="md:col-span-2 space-y-2">
@@ -216,7 +227,7 @@ export function AccountView({ user }: { user: any | null }) {
             <p className="text-xs text-slate-500 leading-relaxed font-medium">
               <span className="font-bold text-amber-600">Tip:</span> Leave the
               password fields blank if you do not wish to change your current
-              password. Use a mix of symbols and numbers for better security.
+              password.
             </p>
           </div>
         </section>

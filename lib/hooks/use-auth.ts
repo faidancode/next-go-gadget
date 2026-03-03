@@ -29,6 +29,7 @@ type LoginSuccessData = {
     id?: string | null;
     name?: string | null;
     email?: string | null;
+    phone?: string | null;
   };
   cart?: {
     items?: CartItem[] | null;
@@ -45,8 +46,8 @@ type LoginResponse = {
 async function registerUser(payload: RegisterFormValues) {
   return apiRequest<RegisterResponse>("/auth/register", {
     email: payload.email,
-    first_name: payload.firstName,
-    last_name: payload.lastName,
+    name: payload.name,
+    phone: payload.phone,
     password: payload.password,
     passwordConfirmation: payload.passwordConfirmation,
   });
@@ -122,6 +123,7 @@ export function useLogin() {
         id: user.id,
         email: user.email,
         name: user.name,
+        phone: user.phone || "000000000000",
         role: role,
       };
       authLogin(mappedUser);
@@ -184,7 +186,7 @@ async function resetPassword(payload: ResetPasswordApiPayload) {
     message: string;
   }>("/auth/password-reset/confirm", {
     token: payload.token,
-    new_password: payload.password, 
+    new_password: payload.password,
   });
 }
 

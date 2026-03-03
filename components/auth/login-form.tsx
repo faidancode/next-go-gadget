@@ -78,16 +78,23 @@ export function LoginForm({
               {loginMessage && (
                 <Alert
                   variant={loginMessage.variant}
-                  className="rounded-2xl border-emerald-100 bg-emerald-50 text-emerald-700"
+                  className={cn(
+                    "rounded-2xl transition-all",
+                    loginMessage.variant === "success" && "border-emerald-200 bg-emerald-50 text-emerald-700",
+                    loginMessage.variant === "warning" && "border-amber-100 bg-amber-50 text-amber-700",
+                    loginMessage.variant === "info" && "border-blue-100 bg-blue-50 text-blue-700"
+                  )}
                 >
                   {loginMessage.message}
                 </Alert>
               )}
+
               {serverError && (
                 <Alert variant="error" className="rounded-2xl">
                   {serverError}
                 </Alert>
               )}
+
               {showResend && (
                 <Link
                   href={`/resend-email-confirmation?email=${encodeURIComponent(form.getValues("email"))}`}
@@ -159,7 +166,7 @@ export function LoginForm({
                   className={cn(
                     "h-12 rounded-2xl bg-slate-50 border-slate-200 pr-11 focus:bg-white transition-all",
                     errors.password &&
-                      "border-red-500 focus-visible:ring-red-500",
+                    "border-red-500 focus-visible:ring-red-500",
                   )}
                   disabled={isLoading}
                   {...register("password")}

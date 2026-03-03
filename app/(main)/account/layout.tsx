@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuthStore } from "@/app/stores/auth";
 import {
   User,
@@ -14,8 +14,9 @@ import {
   LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Toaster } from "sonner";
+import { toast, Toaster } from "sonner";
 import { cn } from "@/lib/utils";
+import { apiRequest } from "@/lib/api/fetcher";
 
 export default function AccountLayout({
   children,
@@ -25,10 +26,28 @@ export default function AccountLayout({
   const user = useAuthStore((s) => s.user);
   const [isMounted, setIsMounted] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+  const logout = useAuthStore((s) => s.logout);
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  async function handleLogout() {
+    try {
+      await apiRequest<{ success: boolean }>(
+        "/auth/logout",
+        {},
+        { method: "POST" },
+      );
+    } catch {
+      // ignore
+    } finally {
+      router.replace("/login");
+      logout();
+      toast.success("You have been logged out.");
+    }
+  }
 
   const items = [
     { label: "Profile", href: "/account", icon: <User size={18} /> },
@@ -136,7 +155,7 @@ export default function AccountLayout({
                   );
                 })}
 
-                <button className="mt-4 flex items-center gap-4 px-4 py-4 rounded-2xl text-sm font-bold text-red-400 hover:bg-red-50 hover:text-red-600 transition-all duration-200">
+                <button className="mt-4 flex items-center gap-4 px-4 py-4 rounded-2xl text-sm font-bold text-red-400 hover:bg-red-50 hover:text-red-600 transition-all duration-200 hover:cursor-pointer" onClick={handleLogout}>
                   <LogOut size={18} />
                   Sign Out
                 </button>

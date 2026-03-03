@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
-import { Poppins } from "next/font/google";
+import { Plus_Jakarta_Sans, Poppins } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import ReactQueryProvider from "./provider/react-query-provider";
 
-const poppins = Poppins({
-  variable: "--font-poppins",
+const jakartaSans = Plus_Jakarta_Sans({
+  variable: "--font-jakarta-sans",
   subsets: ["latin"],
-  weight: ["400", "700"],
+  weight: ["500", "700"],
 });
 
 export const metadata: Metadata = {
@@ -23,7 +23,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${poppins.className} antialiased min-h-screen flex flex-col`}
+        className={`${jakartaSans.className} antialiased min-h-screen flex flex-col`}
       >
         <ReactQueryProvider>
           {children}

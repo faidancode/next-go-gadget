@@ -31,7 +31,7 @@ export function Footer() {
                     className="brightness-0 invert"
                   />
                 </div>
-                <h1 className="font-serif italic text-2xl tracking-tighter text-slate-900">
+                <h1 className=" italic text-2xl tracking-tighter text-slate-900">
                   {appName}
                 </h1>
               </div>

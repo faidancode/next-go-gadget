@@ -89,7 +89,7 @@ export function Navbar() {
                 className="brightness-0 invert"
               />
             </div>
-            <span className="font-serif italic text-xl tracking-tighter text-slate-900">
+            <span className="italic text-xl tracking-tighter text-slate-900">
               {appName}
             </span>
           </Link>
@@ -195,7 +195,7 @@ export function Navbar() {
                       className="brightness-0 invert"
                     />
                   </div>
-                  <span className="font-serif italic text-xl tracking-tighter text-slate-900">
+                  <span className="italic text-xl tracking-tighter text-slate-900">
                     {appName}
                   </span>
                 </div>

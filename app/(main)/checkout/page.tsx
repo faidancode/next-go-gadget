@@ -152,7 +152,7 @@ export default function CheckoutPage() {
   if (!user) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4 bg-white">
-        <h2 className="text-3xl font-serif mb-2 text-slate-900">
+        <h2 className="text-3xl  mb-2 text-slate-900">
           Sign in to checkout
         </h2>
         <p className="text-slate-500 mb-8">
@@ -198,7 +198,7 @@ export default function CheckoutPage() {
               <ChevronRight size={12} />
               <span className="text-slate-300">Payment</span>
             </nav>
-            <h1 className="text-6xl font-serif tracking-tight text-slate-900 mb-4">
+            <h1 className="text-6xl  tracking-tight text-slate-900 mb-4">
               Review <span className="italic text-slate-400">Order</span>
             </h1>
             <p className="font-mono text-[10px] tracking-[0.3em] uppercase text-slate-400">
@@ -341,7 +341,7 @@ export default function CheckoutPage() {
           {/* Sidebar Summary */}
           <aside className="lg:col-span-5">
             <div className="sticky top-12 bg-white border border-slate-200/60 rounded-2xl p-10 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.05)]">
-              <h2 className="font-serif text-4xl mb-12 text-slate-900">
+              <h2 className=" text-4xl mb-12 text-slate-900">
                 Summary
               </h2>
 
@@ -364,7 +364,7 @@ export default function CheckoutPage() {
                     <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.3em]">
                       Total Payable
                     </span>
-                    <span className="text-5xl font-serif text-slate-900 tracking-tighter tabular-nums">
+                    <span className="text-5xl  text-slate-900 tracking-tighter tabular-nums">
                       {formatIDR(grandTotal)}
                     </span>
                   </div>

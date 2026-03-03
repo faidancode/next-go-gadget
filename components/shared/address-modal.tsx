@@ -138,7 +138,7 @@ export function AddressModal({
             {/* Header */}
             <div className="px-8 pt-8 pb-4 flex justify-between items-center">
               <div>
-                <h3 className="text-2xl font-serif text-slate-900">{title}</h3>
+                <h3 className="text-2xl  text-slate-900">{title}</h3>
                 <p className="text-[10px] font-mono tracking-widest text-slate-400 uppercase mt-1">
                   Shipping Information
                 </p>
